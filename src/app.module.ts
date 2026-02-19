@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EnvConfiguration } from './config/env.config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
@@ -8,10 +8,15 @@ import { UserModule } from './user/user.module';
   imports: [
     ConfigModule.forRoot({
       load: [EnvConfiguration],
+      isGlobal: true,
     }),
 
-    MongooseModule.forRoot(process.env.MONGODB || '', {
-      dbName: 'gestorTurnos',
+    MongooseModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get<string>('mongoDb'),
+        dbName: configService.get<string>('dbName'),
+      }),
     }),
 
     UserModule,
@@ -20,3 +25,4 @@ import { UserModule } from './user/user.module';
   providers: [],
 })
 export class AppModule {}
+
