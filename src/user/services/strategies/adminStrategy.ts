@@ -1,15 +1,17 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { CreateUserDtoRequest } from "src/user/presentation/dtos/user-dto-request/create-user.dto";
-import { IUserStrategy } from "./userStrategy";
+import { BaseStrategy } from "./baseStrategy";
+import { UpdateUserDtoRequest } from "src/user/presentation/dtos/user-dto-request/update-user.dto";
 
 
 @Injectable()
-export class AdminStrategy implements IUserStrategy{
+export class AdminStrategy extends BaseStrategy{
 
-    validate(user: CreateUserDtoRequest): void {
+    validateCreate(user: CreateUserDtoRequest): void {
         this.validateName(user.getName());
         this.validateEmail(user.getEmail());
         this.validatePhone(user.getPhone());
+        this.validatePassword(user.getPassword());
         this.ensureNoProviderData(user);
     }
 
@@ -17,7 +19,16 @@ export class AdminStrategy implements IUserStrategy{
         
     }
 
-    async processUpdate(user: CreateUserDtoRequest): Promise<void> {
+    validateUpdate(user: UpdateUserDtoRequest): void {
+        this.validateUpdateBasicFields(user);
+
+        if(user.getProviderData()){
+            throw new NotFoundException('Admin no puede tener información de provider');
+        }
+
+    }
+
+    async processUpdate(user: UpdateUserDtoRequest): Promise<void> {
         
     }
 
@@ -26,29 +37,6 @@ export class AdminStrategy implements IUserStrategy{
         
     }
 
-
-    private validateName(nombre: string): void {
-        if (!nombre || nombre.length < 3) {
-            throw new NotFoundException('Nombre debe tener al menos 3 caracteres');
-        }
-    }
-
-    private validateEmail(email: string): void {
-        if (!email || !this.isValidEmail(email)) {
-            throw new NotFoundException('Email inválido');
-        }
-    }
-
-    private isValidEmail(email: string): boolean {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    }
-
-    private validatePhone(phone : string) : void{
-        if(!phone || phone.length < 11){
-            throw new NotFoundException('El número debe tener cantidad correcta de dígitos');
-        } 
-    }
 
     private ensureNoProviderData(user: CreateUserDtoRequest): asserts user is CreateUserDtoRequest {
         if (user.getProviderData()) {

@@ -6,6 +6,8 @@ import {User as UserSchema, UserDocument} from '../schemas/user.schema';
 import { UserDtoEntityInfrastructure } from '../dto/user.dto';
 import { ProviderDataDtoEntity } from '../dto/providerData.dto';
 import { SocialMediaDtoEntity } from '../dto/socialMedia.dto';
+import { UpdateUserDtoEntity } from '../dto/update-user.dto';
+import { UpdateProviderDataDtoEntity } from '../dto/update-providerData.dto';
 
 @Injectable()
 export class UserRepository implements IUserRepository{
@@ -53,21 +55,13 @@ export class UserRepository implements IUserRepository{
         return this.mapDocumentToDto(user);
     }
 
-    async update(id: string, userDtoEntity: UserDtoEntityInfrastructure): Promise<UserDtoEntityInfrastructure> {
-        const providerDataForDb = userDtoEntity.getProviderData() ? this.mapDocumentToDto(userDtoEntity.getProviderData()!): undefined;
+    async updateUser(id: string, updateUserDtoEntity: UpdateUserDtoEntity): Promise<UserDtoEntityInfrastructure> {
+        const updateData = this.buildUpdateDataUser(updateUserDtoEntity);
 
         const updatedUser = await this.userModel.findByIdAndUpdate(
             id,
-            {
-                nombre: userDtoEntity.getName(),
-                email: userDtoEntity.getEmail(),
-                phone: userDtoEntity.getPhone(),
-                password: userDtoEntity.getPassword(),
-                role: userDtoEntity.getRole(),
-                providerData: providerDataForDb,
-                updatedAt: new Date(),
-            },
-            { new: true } // ← Devuelve el documento actualizado
+            updateData,
+            { new: true }
         );
 
         if (!updatedUser) {
@@ -160,5 +154,67 @@ export class UserRepository implements IUserRepository{
                 url: social.getUrl(),
             })),
         };
+    }
+
+    private buildUpdateDataUser(userDtoEntity: UpdateUserDtoEntity): any {
+        const updateData: any = { updatedAt: new Date(),};
+
+        if (userDtoEntity.getName()) {
+            updateData.name = userDtoEntity.getName();
+        }
+
+        if (userDtoEntity.getEmail()) {
+            updateData.email = userDtoEntity.getEmail();
+        }
+
+        if (userDtoEntity.getPhone()) {
+            updateData.phone = userDtoEntity.getPhone();
+        }
+
+        if (userDtoEntity.getPassword()) {
+            updateData.password = userDtoEntity.getPassword();
+        }
+
+        if (userDtoEntity.getProviderData()) {
+            const providerDataUpdate = this.mapUpdateProviderDataToDb(
+                userDtoEntity.getProviderData()!
+            );
+
+            if (Object.keys(providerDataUpdate).length > 0) {
+                updateData.providerData = providerDataUpdate;
+            }
+        }
+        
+        return updateData;
+    }
+
+    private mapUpdateProviderDataToDb(providerData: UpdateProviderDataDtoEntity): any {
+    const result: any = {};
+
+        if (providerData.getPublicInfo()) {
+            result.publicInfo = providerData.getPublicInfo();
+        }
+
+        if (providerData.getAddress()) {
+            result.address = providerData.getAddress();
+        }
+
+        if (providerData.getMinimumAdvance()) {
+            result.minimumAdvance = providerData.getMinimumAdvance();
+        }
+
+        if (providerData.getServiceType()) {
+            result.serviceType = providerData.getServiceType();
+        }
+        
+        const socialMedia = providerData.getSocialMedia();
+        if (socialMedia) {
+            result.socialMedia = socialMedia.map(social => ({
+                platform: social.getPlatform(),
+                url: social.getUrl(),
+            }));
+        }
+
+        return result;
     }
 }

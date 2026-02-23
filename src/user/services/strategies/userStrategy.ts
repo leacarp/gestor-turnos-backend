@@ -1,9 +1,12 @@
 import { CreateUserDtoRequest } from "src/user/presentation/dtos/user-dto-request/create-user.dto";
-//revisar el dto este, creo que es el de service y no el de presentation
+import { UpdateUserDtoRequest } from "src/user/presentation/dtos/user-dto-request/update-user.dto";
 
 export interface IUserStrategy{
-    validate(user: CreateUserDtoRequest): void;
+    validateCreate(user: CreateUserDtoRequest): void;
     processCreation(user: CreateUserDtoRequest): Promise<void>;
-    processUpdate(user: CreateUserDtoRequest): Promise<void>;
+
+    validateUpdate(user: UpdateUserDtoRequest) : void;
+    processUpdate(user: UpdateUserDtoRequest): Promise<void>;
+
     processDelete(userId: string): Promise<void>;
 }
