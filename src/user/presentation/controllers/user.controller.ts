@@ -19,10 +19,11 @@ export class UserController {
     return createUser;
   }
 
-  /* @Get()
-  findAll() {
-    return this.userService.findAll();
-  } */
+  @Get()
+  async findAllUsers() : Promise<UserResponseDto[]> {
+    const users = await this.userService.findAllUser()
+    return users;
+  }
 
  /*  @Get(':id')
   findOne(@Param('id') id: string) {

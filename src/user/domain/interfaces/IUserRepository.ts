@@ -8,4 +8,5 @@ export interface IUserRepository{
     findById(id: string): Promise<UserDtoEntityInfrastructure | null>;
     updateUser(id: string, updateUserDtoEntity: UpdateUserDtoEntity): Promise<UserDtoEntityInfrastructure>
     deleteUser(id: string, role : string) : Promise<void>;
+    findAllUsers(): Promise<UserDtoEntityInfrastructure[]>;
 }

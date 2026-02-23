@@ -99,7 +99,7 @@ export class UserRepository implements IUserRepository{
         }
     }
 
-    async findAll(): Promise<UserDtoEntityInfrastructure[]> {
+    async findAllUsers(): Promise<UserDtoEntityInfrastructure[]> {
         console.log('📖 Repository: Obteniendo todos los usuarios...');
 
         const users = await this.userModel.find();

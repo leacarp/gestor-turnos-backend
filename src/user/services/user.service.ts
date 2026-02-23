@@ -53,13 +53,12 @@ export class UserService implements IUserService {
     return responseDto;
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findAllUser(): Promise<UserResponseDto[]> {
+    const users = await this.userRepository.findAllUsers();
+
+    return users.map(user => user.toResponseDto())
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
 
   async updateUser(userId: string, updateUserDtoRequest: UpdateUserDtoRequest): Promise<UserResponseDto> {
   

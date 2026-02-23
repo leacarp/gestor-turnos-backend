@@ -7,4 +7,5 @@ export interface IUserService{
     createUser(createUserDto: CreateUserDtoRequest) : Promise<UserResponseDto>;
     updateUser(userId: string, updateUserDtoRequest: UpdateUserDtoRequest): Promise<UserResponseDto>;
     deleteUser(userId: string) : Promise<{message: string}>;
+    findAllUser() : Promise<UserResponseDto[]>;
 }
