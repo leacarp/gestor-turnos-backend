@@ -25,10 +25,11 @@ export class UserController {
     return users;
   }
 
- /*  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
-  } */
+  @Get(':id')
+  async findOneUser(@Param('id') id: string) : Promise<UserResponseDto> {
+    const user =  this.userService.findOneUser(id);
+    return user;
+  } 
 
   @Put(':id')
   async updateUser(@Param('id') id: string, @Body() updateUserDtoRequest: UpdateUserDtoRequest): Promise<UserResponseDto> {
