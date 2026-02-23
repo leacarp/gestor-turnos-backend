@@ -7,4 +7,5 @@ export interface IUserRepository{
     existsByEmail(email: string): Promise<boolean>;
     findById(id: string): Promise<UserDtoEntityInfrastructure | null>;
     updateUser(id: string, updateUserDtoEntity: UpdateUserDtoEntity): Promise<UserDtoEntityInfrastructure>
+    deleteUser(id: string, role : string) : Promise<void>;
 }

@@ -23,7 +23,7 @@ export class CreateUserDtoRequest {
     private readonly password : string;
 
     @IsNotEmpty()
-    @IsEnum(['provider', 'user', 'admin'])
+    @IsEnum(['provider', 'client', 'admin'])
     private readonly role : string;
 
     @ValidateNested()

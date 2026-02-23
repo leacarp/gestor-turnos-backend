@@ -32,7 +32,7 @@ export class UserResponseDto{
         this.phone = phone;
         this.role = role;
         this.providerData = providerData;
-        this.createdAt = createdAt;
+        this.createdAt = createdAt || new Date;
     }
 
    

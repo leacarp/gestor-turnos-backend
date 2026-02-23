@@ -31,7 +31,10 @@ export class UserService implements IUserService {
   async createUser(createUserDto: CreateUserDtoRequest) : Promise<UserResponseDto> {
     const role = createUserDto.getRole();
     const email = createUserDto.getEmail();
-    await this.userRepository.existsByEmail(email);
+    const existingUser = await this.userRepository.existsByEmail(email);
+    if(existingUser){
+      throw new NotFoundException('Ya existe un usuario registrado con este mail')
+    }
     
     let serviceDtoUser = createUserDto.toServiceDto();
     const hashedPassword = await this.hashPassword(serviceDtoUser.getPassword());
@@ -92,8 +95,18 @@ export class UserService implements IUserService {
 
   }
 
-  delete(id: number) {
-    return `This action removes a #${id} user`;
+  async deleteUser(userId: string) : Promise<{ message: string }>{
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+        throw new NotFoundException('Usuario no encontrado');
+    }
+
+    const role = user.getRole();
+    this.selectStrategy(role);
+    await this.strategy.processDelete(userId);
+    await this.userRepository.deleteUser(userId, role);
+
+    return { message: 'Usuario eliminado correctamente' };
   }
 
 

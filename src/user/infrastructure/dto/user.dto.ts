@@ -1,6 +1,5 @@
 import { ProviderDataDtoEntity } from "./providerData.dto";
 import { UserResponseDto } from "src/user/presentation/dtos/user-dto-response/user.dto";
-import { ProviderDataResponseDto } from "src/user/presentation/dtos/user-dto-response/providerData.dto";
 
 export class UserDtoEntityInfrastructure {
     private readonly id?: string;
@@ -10,7 +9,9 @@ export class UserDtoEntityInfrastructure {
     private readonly password: string;
     private readonly role: string;
     private readonly providerData?: ProviderDataDtoEntity;
-    private readonly createdAt? : Date;
+    private isActive: boolean;
+    private createdAt?: Date; 
+    private updatedAt?: Date;
 
     constructor(
         name: string,
@@ -20,6 +21,8 @@ export class UserDtoEntityInfrastructure {
         role: string,
         providerData?: ProviderDataDtoEntity,
         createdAt? : Date,
+        updatedAt?: Date,
+        isActive: boolean = true,
         id?: string,
     ) {
         this.id = id;
@@ -29,7 +32,9 @@ export class UserDtoEntityInfrastructure {
         this.password = password;
         this.role = role;
         this.providerData = providerData;
-        this.createdAt = createdAt;
+        this.createdAt = createdAt || new Date;
+        this.updatedAt = updatedAt || new Date;
+        this.isActive = isActive;
     }
 
     getId() : string | undefined{
@@ -57,6 +62,14 @@ export class UserDtoEntityInfrastructure {
 
     getCreatedAt() : Date | undefined{
         return this.createdAt;
+    }
+
+    getUpdatedAt() : Date | undefined{
+        return this.updatedAt;
+    }
+
+    getIsActive() : boolean{
+        return this.isActive;
     }
     
 

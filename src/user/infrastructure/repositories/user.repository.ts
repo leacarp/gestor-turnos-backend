@@ -73,17 +73,30 @@ export class UserRepository implements IUserRepository{
         return this.mapDocumentToDto(updatedUser);
     }
 
-    async delete(id: string): Promise<void> {
-        console.log(`🗑️ Repository: Eliminando usuario ${id}...`);
-
-        const result = await this.userModel.findByIdAndDelete(id);
+    async deleteUser(id: string, role : string): Promise<void> {
+        
+        if (role === 'provider') {
+        console.log('📦 Marcando provider como inactivo (soft delete)');
+        const result = await this.userModel.findByIdAndUpdate(
+            id,
+            {
+                isActive: false,
+                deletedAt: new Date(),
+            },
+            { new: true }
+        );
 
         if (!result) {
-            console.log('❌ Usuario no encontrado');
-            throw new Error('Usuario no encontrado');
+            throw new NotFoundException('Provider no encontrado');
         }
-
-        console.log('✓ Usuario eliminado');
+        } else {
+            console.log('🗑️ Eliminando usuario completamente de BD');
+            const result = await this.userModel.findByIdAndDelete(id);
+                if (!result) {
+                    console.log('❌ Usuario no encontrado');
+                    throw new NotFoundException('Usuario no encontrado');
+                }
+        }
     }
 
     async findAll(): Promise<UserDtoEntityInfrastructure[]> {
@@ -113,14 +126,17 @@ export class UserRepository implements IUserRepository{
     } 
 
     private mapDocumentToDto(user: any): UserDtoEntityInfrastructure {
+        const providerDataEntity = user.providerData ? this.mapProviderDataToDto(user.providerData) : undefined;
         return new UserDtoEntityInfrastructure(
             user.name,
             user.email,
             user.phone,
             user.password,
             user.role,
-            user.providerData ? this.mapProviderDataToDto(user.providerData) : undefined,
+            providerDataEntity,
             user.createdAt,
+            user.updatedAt,
+            user.isActive,
             user.id.toString()
         );
     }
@@ -184,7 +200,7 @@ export class UserRepository implements IUserRepository{
                 updateData.providerData = providerDataUpdate;
             }
         }
-        
+
         return updateData;
     }
 

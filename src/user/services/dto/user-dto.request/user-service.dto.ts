@@ -9,16 +9,14 @@ export class UserDtoService {
     private readonly password : string;
     private readonly role : string;
     private readonly providerData? : ProviderDataDtoService;
-    private readonly createdAt? : Date;
 
-    constructor(name: string, email: string, phone: string, password: string, role: string, providerData?: ProviderDataDtoService, createdAt? : Date){
+    constructor(name: string, email: string, phone: string, password: string, role: string, providerData?: ProviderDataDtoService){
         this.name = name;
         this.email = email;
         this.phone = phone;
         this.password = password;
         this.role = role;
         this.providerData = providerData;
-        this.createdAt = createdAt;
     }
 
     getName() : string{
@@ -45,9 +43,6 @@ export class UserDtoService {
         return this.providerData;
     }
 
-    getCreatedAt() : Date | undefined{
-        return this.createdAt;
-    }
 
     toEntityDto(): UserDtoEntityInfrastructure {
         const providerDataEntity = this.providerData ? this.providerData.toEntityDto() : undefined;
@@ -57,8 +52,7 @@ export class UserDtoService {
             this.phone,
             this.password,
             this.role,
-            providerDataEntity,
-            this.createdAt
+            providerDataEntity
         );
     }
 }

@@ -6,4 +6,5 @@ import { UpdateUserDtoRequest } from "src/user/presentation/dtos/user-dto-reques
 export interface IUserService{
     createUser(createUserDto: CreateUserDtoRequest) : Promise<UserResponseDto>;
     updateUser(userId: string, updateUserDtoRequest: UpdateUserDtoRequest): Promise<UserResponseDto>;
+    deleteUser(userId: string) : Promise<{message: string}>;
 }
