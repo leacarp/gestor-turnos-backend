@@ -6,6 +6,8 @@ import {User as UserSchema, UserDocument} from '../schemas/user.schema';
 import { UserDtoEntityInfrastructure } from '../dto/user.dto';
 import { ProviderDataDtoEntity } from '../dto/providerData.dto';
 import { SocialMediaDtoEntity } from '../dto/socialMedia.dto';
+import { UpdateUserDtoEntity } from '../dto/update-user.dto';
+import { UpdateProviderDataDtoEntity } from '../dto/update-providerData.dto';
 
 @Injectable()
 export class UserRepository implements IUserRepository{
@@ -53,21 +55,13 @@ export class UserRepository implements IUserRepository{
         return this.mapDocumentToDto(user);
     }
 
-    async update(id: string, userDtoEntity: UserDtoEntityInfrastructure): Promise<UserDtoEntityInfrastructure> {
-        const providerDataForDb = userDtoEntity.getProviderData() ? this.mapDocumentToDto(userDtoEntity.getProviderData()!): undefined;
+    async updateUser(id: string, updateUserDtoEntity: UpdateUserDtoEntity): Promise<UserDtoEntityInfrastructure> {
+        const updateData = this.buildUpdateDataUser(updateUserDtoEntity);
 
         const updatedUser = await this.userModel.findByIdAndUpdate(
             id,
-            {
-                nombre: userDtoEntity.getName(),
-                email: userDtoEntity.getEmail(),
-                phone: userDtoEntity.getPhone(),
-                password: userDtoEntity.getPassword(),
-                role: userDtoEntity.getRole(),
-                providerData: providerDataForDb,
-                updatedAt: new Date(),
-            },
-            { new: true } // ← Devuelve el documento actualizado
+            updateData,
+            { new: true }
         );
 
         if (!updatedUser) {
@@ -79,20 +73,33 @@ export class UserRepository implements IUserRepository{
         return this.mapDocumentToDto(updatedUser);
     }
 
-    async delete(id: string): Promise<void> {
-        console.log(`🗑️ Repository: Eliminando usuario ${id}...`);
-
-        const result = await this.userModel.findByIdAndDelete(id);
+    async deleteUser(id: string, role : string): Promise<void> {
+        
+        if (role === 'provider') {
+        console.log('📦 Marcando provider como inactivo (soft delete)');
+        const result = await this.userModel.findByIdAndUpdate(
+            id,
+            {
+                isActive: false,
+                deletedAt: new Date(),
+            },
+            { new: true }
+        );
 
         if (!result) {
-            console.log('❌ Usuario no encontrado');
-            throw new Error('Usuario no encontrado');
+            throw new NotFoundException('Provider no encontrado');
         }
-
-        console.log('✓ Usuario eliminado');
+        } else {
+            console.log('🗑️ Eliminando usuario completamente de BD');
+            const result = await this.userModel.findByIdAndDelete(id);
+                if (!result) {
+                    console.log('❌ Usuario no encontrado');
+                    throw new NotFoundException('Usuario no encontrado');
+                }
+        }
     }
 
-    async findAll(): Promise<UserDtoEntityInfrastructure[]> {
+    async findAllUsers(): Promise<UserDtoEntityInfrastructure[]> {
         console.log('📖 Repository: Obteniendo todos los usuarios...');
 
         const users = await this.userModel.find();
@@ -119,14 +126,17 @@ export class UserRepository implements IUserRepository{
     } 
 
     private mapDocumentToDto(user: any): UserDtoEntityInfrastructure {
+        const providerDataEntity = user.providerData ? this.mapProviderDataToDto(user.providerData) : undefined;
         return new UserDtoEntityInfrastructure(
             user.name,
             user.email,
             user.phone,
             user.password,
             user.role,
-            user.providerData ? this.mapProviderDataToDto(user.providerData) : undefined,
+            providerDataEntity,
             user.createdAt,
+            user.updatedAt,
+            user.isActive,
             user.id.toString()
         );
     }
@@ -160,5 +170,67 @@ export class UserRepository implements IUserRepository{
                 url: social.getUrl(),
             })),
         };
+    }
+
+    private buildUpdateDataUser(userDtoEntity: UpdateUserDtoEntity): any {
+        const updateData: any = { updatedAt: new Date(),};
+
+        if (userDtoEntity.getName()) {
+            updateData.name = userDtoEntity.getName();
+        }
+
+        if (userDtoEntity.getEmail()) {
+            updateData.email = userDtoEntity.getEmail();
+        }
+
+        if (userDtoEntity.getPhone()) {
+            updateData.phone = userDtoEntity.getPhone();
+        }
+
+        if (userDtoEntity.getPassword()) {
+            updateData.password = userDtoEntity.getPassword();
+        }
+
+        if (userDtoEntity.getProviderData()) {
+            const providerDataUpdate = this.mapUpdateProviderDataToDb(
+                userDtoEntity.getProviderData()!
+            );
+
+            if (Object.keys(providerDataUpdate).length > 0) {
+                updateData.providerData = providerDataUpdate;
+            }
+        }
+
+        return updateData;
+    }
+
+    private mapUpdateProviderDataToDb(providerData: UpdateProviderDataDtoEntity): any {
+    const result: any = {};
+
+        if (providerData.getPublicInfo()) {
+            result.publicInfo = providerData.getPublicInfo();
+        }
+
+        if (providerData.getAddress()) {
+            result.address = providerData.getAddress();
+        }
+
+        if (providerData.getMinimumAdvance()) {
+            result.minimumAdvance = providerData.getMinimumAdvance();
+        }
+
+        if (providerData.getServiceType()) {
+            result.serviceType = providerData.getServiceType();
+        }
+        
+        const socialMedia = providerData.getSocialMedia();
+        if (socialMedia) {
+            result.socialMedia = socialMedia.map(social => ({
+                platform: social.getPlatform(),
+                url: social.getUrl(),
+            }));
+        }
+
+        return result;
     }
 }

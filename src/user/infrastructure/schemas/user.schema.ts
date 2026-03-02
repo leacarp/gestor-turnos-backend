@@ -20,7 +20,7 @@ export class User{
 
     @Prop({ 
     required: true, 
-    enum: ['provider', 'user', 'admin'],
+    enum: ['provider', 'client', 'admin'],
     default: 'user'
     })
     role: string;
@@ -28,7 +28,8 @@ export class User{
     @Prop({ type: ProviderDataSchema, required: false})
     providerData?: ProviderData;
 
-    createdAt?: Date;
+    @Prop({ default: true })
+    isActive: boolean;
 
 }
 

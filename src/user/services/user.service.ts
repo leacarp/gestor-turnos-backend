@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { IUserService } from '../domain/interfaces/IUserService';
 import { IUserStrategy } from './strategies/userStrategy';
 import { ProviderStrategy } from './strategies/providerStrategy';
@@ -10,8 +10,8 @@ import type { IUserRepository } from '../domain/interfaces/IUserRepository';
 import * as bcrypt from 'bcrypt';
 import { UserDtoService } from './dto/user-dto.request/user-service.dto';
 import { UserResponseDto } from '../presentation/dtos/user-dto-response/user.dto';
-import e from 'express';
-
+import { UpdateUserDtoRequest } from '../presentation/dtos/user-dto-request/update-user.dto';
+import { UpdateUserDtoService } from './dto/user-dto.request/update-user-service.dto';
 
 
 @Injectable()
@@ -31,14 +31,17 @@ export class UserService implements IUserService {
   async createUser(createUserDto: CreateUserDtoRequest) : Promise<UserResponseDto> {
     const role = createUserDto.getRole();
     const email = createUserDto.getEmail();
-    await this.userRepository.existsByEmail(email);
+    const existingUser = await this.userRepository.existsByEmail(email);
+    if(existingUser){
+      throw new NotFoundException('Ya existe un usuario registrado con este mail')
+    }
     
     let serviceDtoUser = createUserDto.toServiceDto();
     const hashedPassword = await this.hashPassword(serviceDtoUser.getPassword());
     serviceDtoUser = this.updatePasswordInServiceDto(serviceDtoUser, hashedPassword);
 
     this.selectStrategy(role);
-    this.strategy.validate(createUserDto);
+    this.strategy.validateCreate(createUserDto);
 
     await this.strategy.processCreation(createUserDto);
 
@@ -50,20 +53,68 @@ export class UserService implements IUserService {
     return responseDto;
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async findOneUser(userId: string): Promise<UserResponseDto> {
+    const user = await this.userRepository.findById(userId);
+    if(!user){
+      throw new NotFoundException('Usuario no encontrado');
+    }
+    
+    return user.toResponseDto()
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findAllUser(): Promise<UserResponseDto[]> {
+    const users = await this.userRepository.findAllUsers();
+
+    return users.map(user => user.toResponseDto())
   }
 
-  update(id: number, updateUserDto) {
-    return `This action updates a #${id} user`;
+
+  async updateUser(userId: string, updateUserDtoRequest: UpdateUserDtoRequest): Promise<UserResponseDto> {
+  
+    const currentUser = await this.userRepository.findById(userId);
+    if (!currentUser) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    let updateUserDtoService = updateUserDtoRequest.toServiceDto();
+
+    if (updateUserDtoService.getPassword()) {
+        console.log('🔐 Password cambió, encriptando...');
+        const hashedPassword = await this.hashPassword(updateUserDtoService.getPassword()!);
+        updateUserDtoService = this.updatePasswordInServiceDtoUpdateUser(updateUserDtoService, hashedPassword);
+        console.log('✓ Password encriptada');
+    }
+
+    const role = currentUser.getRole();
+    this.selectStrategy(role);
+    this.strategy.validateUpdate(updateUserDtoRequest);
+    await this.strategy.processUpdate(updateUserDtoRequest);
+
+    const updateUserDtoEntity = updateUserDtoService.toEntityDto();
+
+    await this.userRepository.updateUser(userId, updateUserDtoEntity);
+
+    const updatedUser = await this.userRepository.findById(userId);
+    if (!updatedUser) {
+        throw new NotFoundException('Usuario no encontrado después de actualizar');
+    }
+
+    return updatedUser.toResponseDto();
+
   }
 
-  delete(id: number) {
-    return `This action removes a #${id} user`;
+  async deleteUser(userId: string) : Promise<{ message: string }>{
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+        throw new NotFoundException('Usuario no encontrado');
+    }
+
+    const role = user.getRole();
+    this.selectStrategy(role);
+    await this.strategy.processDelete(userId);
+    await this.userRepository.deleteUser(userId, role);
+
+    return { message: 'Usuario eliminado correctamente' };
   }
 
 
@@ -87,6 +138,16 @@ export class UserService implements IUserService {
       serviceDtoUser.getProviderData()
     );
   }
+
+  private updatePasswordInServiceDtoUpdateUser(updateUserDtoService: UpdateUserDtoService, hashedPassword: string): UpdateUserDtoService {
+    return new UpdateUserDtoService(
+        updateUserDtoService.getName(),
+        updateUserDtoService.getEmail(),
+        updateUserDtoService.getPhone(),
+        hashedPassword,
+        updateUserDtoService.getProviderData()
+    );
+}
 
 
   private selectStrategy(role: string) : void {

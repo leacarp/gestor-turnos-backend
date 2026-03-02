@@ -1,0 +1,56 @@
+import { UpdateSocialMediaDtoService } from "./updateSocialMedia-service.dto";
+import { UpdateProviderDataDtoEntity } from "src/user/infrastructure/dto/update-providerData.dto";
+
+export class UpdateProviderDataDtoService {
+    private readonly publicInfo?: string;
+    private readonly address?: string;
+    private readonly minimumAdvance?: string;
+    private readonly serviceType?: string;
+    private readonly socialMedia?: UpdateSocialMediaDtoService[];
+
+    constructor(
+        publicInfo?: string,
+        address?: string,
+        minimumAdvance?: string,
+        serviceType?: string,
+        socialMedia?: UpdateSocialMediaDtoService[]
+    ) {
+        this.publicInfo = publicInfo;
+        this.address = address;
+        this.minimumAdvance = minimumAdvance;
+        this.serviceType = serviceType;
+        this.socialMedia = socialMedia;
+    }
+
+    getPublicInfo(): string | undefined { 
+        return this.publicInfo; 
+    }
+    
+    getAddress(): string | undefined { 
+        return this.address; 
+    }
+
+    getMinimumAdvance(): string | undefined { 
+        return this.minimumAdvance; 
+    }
+
+    getServiceType(): string | undefined { 
+        return this.serviceType; 
+    }
+
+    getSocialMedia(): UpdateSocialMediaDtoService[] | undefined { 
+        return this.socialMedia; 
+    }
+
+    toEntityDto(): UpdateProviderDataDtoEntity {
+        const socialMediaEntity = this.socialMedia?.map(social => social.toEntityDto());
+
+        return new UpdateProviderDataDtoEntity(
+            this.publicInfo,
+            this.address,
+            this.minimumAdvance,
+            this.serviceType,
+            socialMediaEntity
+        );
+    }
+}

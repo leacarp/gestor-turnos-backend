@@ -1,20 +1,24 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { CreateUserDtoRequest } from "src/user/presentation/dtos/user-dto-request/create-user.dto";
-import { IUserStrategy } from "./userStrategy";
 import { ProviderDataDtoRequest } from "src/user/presentation/dtos/user-dto-request/providerData.dto";
+import { UpdateUserDtoRequest } from "src/user/presentation/dtos/user-dto-request/update-user.dto";
+import { UpdateProviderDataDtoRequest } from "src/user/presentation/dtos/user-dto-request/update-providerData.dto";
+import { UpdateSocialMediaDtoRequest } from "src/user/presentation/dtos/user-dto-request/update-socialMedia.dto";
+import { BaseStrategy } from "./baseStrategy";
 
 @Injectable()
-export class ProviderStrategy implements IUserStrategy{
-    validate(user: CreateUserDtoRequest): void {
+export class ProviderStrategy extends BaseStrategy{
+    
+    validateCreate(user: CreateUserDtoRequest): void {
         this.validateName(user.getName());
         this.validateEmail(user.getEmail());
         this.validatePhone(user.getPhone());
+        this.validatePassword(user.getPassword());
         
         const providerData = user.getProviderData();
-        this.ensureProviderDataExists(providerData);
-        this.validateProviderDataContent(providerData);
-        const publicInfo = providerData.getPublicInfo();
-        this.validDocumentation(publicInfo);
+        this.ensureProviderDataExistsCreate(providerData);
+        this.validateProviderDataContentCreate(providerData);
+
     }
 
     async processCreation(user: CreateUserDtoRequest): Promise<void> {
@@ -22,52 +26,55 @@ export class ProviderStrategy implements IUserStrategy{
         
     }
 
-    async processUpdate(user: CreateUserDtoRequest): Promise<void> {
+    validateUpdate(user: UpdateUserDtoRequest): void {
+        this.validateUpdateBasicFields(user);
+        const providerData = user.getProviderData();
+        if (providerData) {
+            this.validateProviderDataContentUpdate(providerData);
+        }
+        
+    }
+
+    async processUpdate(user: UpdateUserDtoRequest): Promise<void> {
         
     }
 
     async processDelete(userId: string): Promise<void> {
         
+        
     }
     
-    private ensureProviderDataExists(providerData: ProviderDataDtoRequest | undefined): asserts providerData is ProviderDataDtoRequest {
+    private ensureProviderDataExistsCreate(providerData: ProviderDataDtoRequest | undefined): asserts providerData is ProviderDataDtoRequest {
         if (!providerData) {
             throw new NotFoundException('Provider debe tener información adicional');
         }
     }
-    private validateProviderDataContent(providerData: ProviderDataDtoRequest): void {
-        if (providerData.getSocialMedia().length === 0) {
+
+    private validateProviderDataContentCreate(providerData: ProviderDataDtoRequest): void {
+        if (providerData.getSocialMedia() && providerData.getSocialMedia().length === 0) {
+            throw new NotFoundException('Provider debe tener al menos una red social');
+        }
+
+        const publicInfo = providerData.getPublicInfo();
+        if (!publicInfo || publicInfo.length < 20) {
+            throw new NotFoundException('Información pública insuficiente (mínimo 20 caracteres)');
+        }
+    }
+
+    private validateProviderDataContentUpdate(providerData: UpdateProviderDataDtoRequest): void {
+        this.validateSocialMediaUpdate(providerData.getSocialMedia());
+        this.validatePublicInfoUpdate(providerData.getPublicInfo());
+    }
+
+    private validateSocialMediaUpdate(socialMedia: UpdateSocialMediaDtoRequest[] | undefined): void {
+        if (socialMedia !== undefined && socialMedia.length === 0) {
             throw new NotFoundException('Provider debe tener al menos una red social');
         }
     }
 
-    private validDocumentation(publicInfo : string): void{
-        if (!publicInfo || publicInfo.length < 20) {
-            throw new NotFoundException('Documentación insuficiente');
+    private validatePublicInfoUpdate(publicInfo: string | undefined): void {
+        if (publicInfo && publicInfo.length < 20) {
+            throw new NotFoundException('Información pública insuficiente (mínimo 20 caracteres)');
         }
     }
-
-    private validateName(nombre: string): void {
-        if (!nombre || nombre.length < 3) {
-            throw new NotFoundException('Nombre debe tener al menos 3 caracteres');
-        }
-    }
-
-    private validateEmail(email: string): void {
-        if (!email || !this.isValidEmail(email)) {
-            throw new NotFoundException('Email inválido');
-        }
-    }
-
-    private isValidEmail(email: string): boolean {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    }
-
-    private validatePhone(phone : string) : void{
-        if(!phone || phone.length < 11){
-            throw new NotFoundException('El número debe tener cantidad correcta de dígitos');
-        } 
-    }
-
 }
