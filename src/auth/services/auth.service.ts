@@ -3,21 +3,20 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
 import type { IAuthService } from '../domain/interfaces/auth-service.interface.js';
-import type { IUserRepository } from '../../user/domain/interfaces/IUserRepository.js';
-import { USER_REPOSITORY } from '../../user/infrastructure/constants/user-repository.constants.js';
+import type { IAuthUserAdapter, AuthUserData } from '../domain/interfaces/auth-user-adapter.interface.js';
+import { AUTH_USER_ADAPTER } from '../infrastructure/constants/injection-tokens.js';
 
 import { LoginRequestDto } from '../presentation/dtos/auth-dto-request/login-request.dto.js';
 import { RegisterRequestDto } from '../presentation/dtos/auth-dto-request/register-request.dto.js';
 import { AuthResponseDto } from '../presentation/dtos/auth-dto-response/auth-response.dto.js';
 import { AuthUserDto } from '../presentation/dtos/auth-dto-response/auth-user.dto.js';
-import { UserDtoEntityInfrastructure } from '../../user/infrastructure/dto/user.dto.js';
 
 @Injectable()
 export class AuthService implements IAuthService {
 
   constructor(
-    @Inject(USER_REPOSITORY)
-    private readonly userRepository: IUserRepository,
+    @Inject(AUTH_USER_ADAPTER)
+    private readonly userAdapter: IAuthUserAdapter,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -25,13 +24,13 @@ export class AuthService implements IAuthService {
     const email = loginDto.getEmail();
     const password = loginDto.getPassword();
 
-    const user = await this.userRepository.findByEmail(email);
+    const user = await this.userAdapter.findByEmail(email);
 
     if (!user) {
       throw new UnauthorizedException('Credenciales inválidas');
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.getPassword());
+    const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Credenciales inválidas');
@@ -45,7 +44,7 @@ export class AuthService implements IAuthService {
   async register(registerDto: RegisterRequestDto): Promise<AuthResponseDto> {
     const email = registerDto.getEmail();
 
-    const emailExists = await this.userRepository.existsByEmail(email);
+    const emailExists = await this.userAdapter.existsByEmail(email);
 
     if (emailExists) {
       throw new ConflictException('El email ya está registrado');
@@ -53,37 +52,35 @@ export class AuthService implements IAuthService {
 
     const hashedPassword = await bcrypt.hash(registerDto.getPassword(), 10);
 
-    const userEntity = new UserDtoEntityInfrastructure(
-      registerDto.getName(),
-      registerDto.getEmail(),
-      registerDto.getPhone(),
-      hashedPassword,
-      registerDto.getRole(),
-    );
-
-    const savedUser = await this.userRepository.save(userEntity);
+    const savedUser = await this.userAdapter.createUser({
+      name: registerDto.getName(),
+      email: registerDto.getEmail(),
+      phone: registerDto.getPhone(),
+      password: hashedPassword,
+      role: registerDto.getRole(),
+    });
 
     const token = this.generateToken(savedUser);
 
     return this.buildAuthResponse(token, savedUser);
   }
 
-  private generateToken(user: UserDtoEntityInfrastructure): string {
+  private generateToken(user: AuthUserData): string {
     const payload = {
-      sub: user.getId(),
-      email: user.getEmail(),
-      role: user.getRole(),
+      sub: user.id,
+      email: user.email,
+      role: user.role,
     };
 
     return this.jwtService.sign(payload);
   }
 
-  private buildAuthResponse(token: string, user: UserDtoEntityInfrastructure): AuthResponseDto {
+  private buildAuthResponse(token: string, user: AuthUserData): AuthResponseDto {
     const authUser = new AuthUserDto(
-      user.getId()!,
-      user.getName(),
-      user.getEmail(),
-      user.getRole(),
+      user.id,
+      user.name,
+      user.email,
+      user.role,
     );
 
     return new AuthResponseDto(token, authUser);

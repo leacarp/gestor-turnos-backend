@@ -8,7 +8,8 @@ import { UserModule } from '../user/user.module.js';
 import { AuthController } from './presentation/controllers/auth.controller.js';
 import { AuthService } from './services/auth.service.js';
 import { JwtStrategy } from './infrastructure/strategies/jwt.strategy.js';
-import { AUTH_SERVICE } from './infrastructure/constants/injection-tokens.js';
+import { UserRepositoryAdapter } from './infrastructure/adapters/user-repository.adapter.js';
+import { AUTH_SERVICE, AUTH_USER_ADAPTER } from './infrastructure/constants/injection-tokens.js';
 
 @Module({
   imports: [
@@ -30,6 +31,10 @@ import { AUTH_SERVICE } from './infrastructure/constants/injection-tokens.js';
     {
       provide: AUTH_SERVICE,
       useClass: AuthService,
+    },
+    {
+      provide: AUTH_USER_ADAPTER,
+      useClass: UserRepositoryAdapter,
     },
     JwtStrategy,
   ],
