@@ -117,6 +117,10 @@ export class UserService implements IUserService {
     return { message: 'Usuario eliminado correctamente' };
   }
 
+  async existsProvider(providerId: string): Promise<boolean> {
+    const user = await this.userRepository.findById(providerId);
+    return !!user && user.getRole() === 'provider';
+  }
 
 
   private async hashPassword(password: string): Promise<string> {
