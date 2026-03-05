@@ -5,7 +5,7 @@ import { AvailabilityException as AvailabilityExceptionSchema, AvailabilityExcep
 import { AvailabilityRepository } from './infrastructure/repositories/availability.repository';
 import { AppointmentAdapter } from './infrastructure/adapters/appointment.adapter';
 import { AvailabilityService } from './services/availability.service';
-import { AvailabilityController } from './presentation/availability.controller';
+import { AvailabilityController } from './presentation/controllers/availability.controller';
 import { UserModule } from 'src/user/user.module';
 import { UserAdapter } from './infrastructure/adapters/user.adapter';
 
