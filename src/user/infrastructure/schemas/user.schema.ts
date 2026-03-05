@@ -20,7 +20,7 @@ export class User{
 
     @Prop({ 
     required: true, 
-    enum: ['provider', 'client', 'admin'],
+    enum: ['provider', 'user', 'client', 'admin'],
     default: 'user'
     })
     role: string;
