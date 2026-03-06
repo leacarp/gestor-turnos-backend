@@ -8,6 +8,7 @@ import { AvailabilityService } from './services/availability.service';
 import { AvailabilityController } from './presentation/controllers/availability.controller';
 import { UserModule } from 'src/user/user.module';
 import { UserAdapter } from './infrastructure/adapters/user.adapter';
+import { AVAILABILITY_SERVICE, AVAILABILITY_REPOSITORY, APPOINTMENT_PORT, USER_PORT } from './infrastructure/constants/injection-tokens';
 
 @Module({
   imports: [
@@ -20,19 +21,19 @@ import { UserAdapter } from './infrastructure/adapters/user.adapter';
   controllers: [AvailabilityController],
   providers: [
     {
-      provide: 'IAvailabilityRepository',
+      provide: AVAILABILITY_REPOSITORY,
       useClass: AvailabilityRepository,
     },
     {
-      provide: 'IAppointmentPort',
+      provide: APPOINTMENT_PORT,
       useClass: AppointmentAdapter,
     },
     {
-      provide: 'IAvailabilityService',
+      provide: AVAILABILITY_SERVICE,
       useClass: AvailabilityService,
     },
     {
-      provide: 'IUserPort',
+      provide: USER_PORT,
       useClass: UserAdapter
     }
   ],

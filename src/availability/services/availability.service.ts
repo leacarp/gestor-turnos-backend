@@ -9,16 +9,16 @@ import { WeeklyScheduleDtoService } from './dto/availability-dto.request/weeklyS
 import { AvailabilityExceptionDtoService } from './dto/availability-dto.request/availabilityException-service.dto';
 import { GetSlotsDtoService } from './dto/availability-dto.request/getSlots-service.dto';
 import type { IUserPort } from '../domain/ports/user.port';
-import { empty } from 'rxjs';
+import { AVAILABILITY_REPOSITORY, APPOINTMENT_PORT, USER_PORT } from '../infrastructure/constants/injection-tokens';
  
 
 
 @Injectable()
 export class AvailabilityService implements IAvailabilityService{
   constructor(
-    @Inject('IAvailabilityRepository') private readonly availabilityRepository: IAvailabilityRepository,
-    @Inject('IAppointmentPort') private readonly appointmentPort: IAppointmentPort,
-    @Inject('IUserPort') private readonly userPort : IUserPort
+    @Inject(AVAILABILITY_REPOSITORY) private readonly availabilityRepository: IAvailabilityRepository,
+    @Inject(APPOINTMENT_PORT) private readonly appointmentPort: IAppointmentPort,
+    @Inject(USER_PORT) private readonly userPort : IUserPort
   ) {}
 
   async createSchedule(dto: WeeklyScheduleDtoService): Promise<WeeklyScheduleEntity> {

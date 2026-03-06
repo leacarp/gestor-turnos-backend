@@ -17,13 +17,14 @@ import { AuthUserDto } from 'src/auth/presentation/dtos/auth-dto-response/auth-u
 import { JwtAuthGuard } from 'src/auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/infrastructure/guards/roles.guard';
 import { Roles } from 'src/auth/presentation/decorators/roles.decorator';
+import { AVAILABILITY_SERVICE } from 'src/availability/infrastructure/constants/injection-tokens';
 
 
 @Controller('availability')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class AvailabilityController {
   constructor(
-    @Inject('IAvailabilityService') private readonly availabilityService: IAvailabilityService,
+    @Inject(AVAILABILITY_SERVICE) private readonly availabilityService: IAvailabilityService,
   ) {}
 
   // --- Weekly Schedule ---
