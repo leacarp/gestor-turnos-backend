@@ -9,4 +9,5 @@ export interface IUserService{
     deleteUser(userId: string) : Promise<{message: string}>;
     findOneUser(userId: string) : Promise<UserResponseDto>;
     findAllUser() : Promise<UserResponseDto[]>;
+    existsProvider(providerId: string) : Promise<boolean>;
 }

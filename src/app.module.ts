@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EnvConfiguration } from './config/env.config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
+import { AvailabilityModule } from './availability/availability.module';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
@@ -21,6 +22,7 @@ import { AuthModule } from './auth/auth.module';
     }),
 
     UserModule,
+    AvailabilityModule,
     AuthModule,
   ],
   controllers: [],
