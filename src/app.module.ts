@@ -4,6 +4,7 @@ import { EnvConfiguration } from './config/env.config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { ServiciosModule } from './servicios/servicios.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AuthModule } from './auth/auth.module';
 
     UserModule,
     AuthModule,
+    ServiciosModule,
   ],
   controllers: [],
   providers: [],
