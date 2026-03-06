@@ -1,5 +1,3 @@
-import { NotFoundException } from "@nestjs/common";
-
 export class CustomSlot {
   startTime: string;
   endTime: string;
@@ -16,8 +14,7 @@ export class AvailabilityExceptionEntity {
   private _updatedAt?: Date;
 
   constructor(providerId: string, date : Date, type : 'day_off' | 'custom_hours', id? : string, customSlots? : CustomSlot[], reason? : string, createdAt? : Date, updatedAt?: Date){
-    if(!providerId) throw new NotFoundException('providerId is required');
-    if(!date) throw new NotFoundException('date is required');
+    if(!date) throw new Error('date is required');
     if (type === 'custom_hours' && (!customSlots || customSlots.length === 0)) throw new Error('customSlots is required when type is custom_hours');
   
     this._id = id;

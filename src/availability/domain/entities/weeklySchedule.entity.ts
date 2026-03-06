@@ -15,7 +15,6 @@ export class WeeklyScheduleEntity {
   private _updatedAt?: Date;
 
   constructor(providerId: string, slots: DaySlot[], id?: string, createdAt?: Date, updatedAt?: Date){
-    if(!providerId) throw new NotFoundException('providerId is required');
     this._id = id;
     this._providerId = providerId;
     this._slots = slots;
