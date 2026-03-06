@@ -37,7 +37,8 @@ export class ServicioController {
     @Body() dto: CreateServicioRequestDto,
     @CurrentUser() user: { id: string; role: string },
   ): Promise<ServicioResponseDto> {
-    return this.servicioService.create(dto, user.id);
+    const serviceDto = dto.toServiceDto();
+    return this.servicioService.create(serviceDto, user.id);
   }
 
   @Get()
@@ -63,7 +64,8 @@ export class ServicioController {
     @Body() dto: UpdateServicioRequestDto,
     @CurrentUser() user: { id: string; role: string },
   ): Promise<ServicioResponseDto> {
-    return this.servicioService.update(id, dto, user.id);
+    const serviceDto = dto.toServiceDto();
+    return this.servicioService.update(id, serviceDto, user.id);
   }
 
   @Delete(':id')

@@ -1,4 +1,5 @@
 import { IsString, IsOptional, IsNumber, IsPositive, Min } from 'class-validator';
+import { UpdateServicioServiceDto } from '../../../services/dto/update-servicio-service.dto.js';
 
 export class UpdateServicioRequestDto {
   @IsOptional()
@@ -32,5 +33,13 @@ export class UpdateServicioRequestDto {
 
   getPrecio(): number | undefined {
     return this.precio;
+  }
+
+  toServiceDto(): UpdateServicioServiceDto {
+    return new UpdateServicioServiceDto(
+      this.nombre,
+      this.duracion,
+      this.precio,
+    );
   }
 }

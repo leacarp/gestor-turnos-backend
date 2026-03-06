@@ -13,9 +13,10 @@ import {
   SERVICIO_PROVIDER_ADAPTER,
 } from '../infrastructure/constants/injection-tokens.js';
 
-import { CreateServicioRequestDto } from '../presentation/dtos/servicio-dto-request/create-servicio-request.dto.js';
-import { UpdateServicioRequestDto } from '../presentation/dtos/servicio-dto-request/update-servicio-request.dto.js';
+import { CreateServicioServiceDto } from './dto/create-servicio-service.dto.js';
+import { UpdateServicioServiceDto } from './dto/update-servicio-service.dto.js';
 import { ServicioResponseDto } from '../presentation/dtos/servicio-dto-response/servicio-response.dto.js';
+import type { ServicioInfrastructureDto } from '../infrastructure/dto/servicio-infrastructure.dto.js';
 
 @Injectable()
 export class ServicioService implements IServicioService {
@@ -28,20 +29,63 @@ export class ServicioService implements IServicioService {
   ) {}
 
   async create(
-    dto: CreateServicioRequestDto,
+    dto: CreateServicioServiceDto,
     proveedorId: string,
   ): Promise<ServicioResponseDto> {
     await this.validateProvider(proveedorId);
 
-    return this.servicioRepository.create({
-      nombre: dto.getNombre(),
-      duracion: dto.getDuracion(),
-      precio: dto.getPrecio(),
-      proveedorId,
-    });
+    const infraDto = dto.toInfrastructureDto(proveedorId);
+    const saved = await this.servicioRepository.create(infraDto);
+
+    return saved.toResponseDto();
   }
 
   async findById(id: string): Promise<ServicioResponseDto> {
+    const servicio = await this.findInfraById(id);
+
+    return servicio.toResponseDto();
+  }
+
+  async findAll(): Promise<ServicioResponseDto[]> {
+    const servicios = await this.servicioRepository.findAll();
+
+    return servicios.map((s) => s.toResponseDto());
+  }
+
+  async findByProveedor(proveedorId: string): Promise<ServicioResponseDto[]> {
+    const servicios = await this.servicioRepository.findByProveedor(proveedorId);
+
+    return servicios.map((s) => s.toResponseDto());
+  }
+
+  async update(
+    id: string,
+    dto: UpdateServicioServiceDto,
+    proveedorId: string,
+  ): Promise<ServicioResponseDto> {
+    const servicio = await this.findInfraById(id);
+
+    this.validateOwnership(servicio, proveedorId);
+
+    const updateData = dto.toInfrastructureUpdateData();
+    const updated = await this.servicioRepository.update(id, updateData);
+
+    if (!updated) {
+      throw new NotFoundException('Servicio no encontrado');
+    }
+
+    return updated.toResponseDto();
+  }
+
+  async delete(id: string, proveedorId: string): Promise<void> {
+    const servicio = await this.findInfraById(id);
+
+    this.validateOwnership(servicio, proveedorId);
+
+    await this.servicioRepository.delete(id);
+  }
+
+  private async findInfraById(id: string): Promise<ServicioInfrastructureDto> {
     const servicio = await this.servicioRepository.findById(id);
 
     if (!servicio) {
@@ -49,44 +93,6 @@ export class ServicioService implements IServicioService {
     }
 
     return servicio;
-  }
-
-  async findAll(): Promise<ServicioResponseDto[]> {
-    return this.servicioRepository.findAll();
-  }
-
-  async findByProveedor(proveedorId: string): Promise<ServicioResponseDto[]> {
-    return this.servicioRepository.findByProveedor(proveedorId);
-  }
-
-  async update(
-    id: string,
-    dto: UpdateServicioRequestDto,
-    proveedorId: string,
-  ): Promise<ServicioResponseDto> {
-    const servicio = await this.findById(id);
-
-    this.validateOwnership(servicio, proveedorId);
-
-    const updated = await this.servicioRepository.update(id, {
-      nombre: dto.getNombre(),
-      duracion: dto.getDuracion(),
-      precio: dto.getPrecio(),
-    });
-
-    if (!updated) {
-      throw new NotFoundException('Servicio no encontrado');
-    }
-
-    return updated;
-  }
-
-  async delete(id: string, proveedorId: string): Promise<void> {
-    const servicio = await this.findById(id);
-
-    this.validateOwnership(servicio, proveedorId);
-
-    await this.servicioRepository.delete(id);
   }
 
   private async validateProvider(proveedorId: string): Promise<void> {
@@ -98,10 +104,10 @@ export class ServicioService implements IServicioService {
   }
 
   private validateOwnership(
-    servicio: ServicioResponseDto,
+    servicio: ServicioInfrastructureDto,
     proveedorId: string,
   ): void {
-    if (servicio.proveedorId !== proveedorId) {
+    if (servicio.getProveedorId() !== proveedorId) {
       throw new ForbiddenException('No podés modificar un servicio que no te pertenece');
     }
   }

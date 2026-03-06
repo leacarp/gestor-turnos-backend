@@ -1,9 +1,9 @@
-import { CreateServicioRequestDto } from '../../presentation/dtos/servicio-dto-request/create-servicio-request.dto.js';
-import { UpdateServicioRequestDto } from '../../presentation/dtos/servicio-dto-request/update-servicio-request.dto.js';
+import { CreateServicioServiceDto } from '../../services/dto/create-servicio-service.dto.js';
+import { UpdateServicioServiceDto } from '../../services/dto/update-servicio-service.dto.js';
 import { ServicioResponseDto } from '../../presentation/dtos/servicio-dto-response/servicio-response.dto.js';
 
 export interface IServicioService {
-  create(dto: CreateServicioRequestDto, proveedorId: string): Promise<ServicioResponseDto>;
+  create(dto: CreateServicioServiceDto, proveedorId: string): Promise<ServicioResponseDto>;
 
   findById(id: string): Promise<ServicioResponseDto>;
 
@@ -11,7 +11,7 @@ export interface IServicioService {
 
   findByProveedor(proveedorId: string): Promise<ServicioResponseDto[]>;
 
-  update(id: string, dto: UpdateServicioRequestDto, proveedorId: string): Promise<ServicioResponseDto>;
+  update(id: string, dto: UpdateServicioServiceDto, proveedorId: string): Promise<ServicioResponseDto>;
 
   delete(id: string, proveedorId: string): Promise<void>;
 }

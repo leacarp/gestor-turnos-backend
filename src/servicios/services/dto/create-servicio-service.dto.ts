@@ -1,18 +1,8 @@
-import { IsString, IsNotEmpty, IsNumber, IsPositive, Min } from 'class-validator';
-import { CreateServicioServiceDto } from '../../../services/dto/create-servicio-service.dto.js';
+import { ServicioInfrastructureDto } from '../../infrastructure/dto/servicio-infrastructure.dto.js';
 
-export class CreateServicioRequestDto {
-  @IsString()
-  @IsNotEmpty()
+export class CreateServicioServiceDto {
   private readonly nombre: string;
-
-  @IsNumber()
-  @IsPositive()
-  @Min(1)
   private readonly duracion: number;
-
-  @IsNumber()
-  @IsPositive()
   private readonly precio: number;
 
   constructor(nombre: string, duracion: number, precio: number) {
@@ -33,11 +23,12 @@ export class CreateServicioRequestDto {
     return this.precio;
   }
 
-  toServiceDto(): CreateServicioServiceDto {
-    return new CreateServicioServiceDto(
+  toInfrastructureDto(proveedorId: string): ServicioInfrastructureDto {
+    return new ServicioInfrastructureDto(
       this.nombre,
       this.duracion,
       this.precio,
+      proveedorId,
     );
   }
 }
