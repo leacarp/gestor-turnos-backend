@@ -13,7 +13,7 @@ export class ProviderData{
     address: string;
 
     @Prop({required: true})
-    minimumAdvance: string;
+    minimumAdvance: number;
 
     @Prop({required: true})
     serviceType: string;

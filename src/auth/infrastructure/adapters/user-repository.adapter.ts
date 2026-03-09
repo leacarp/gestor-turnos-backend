@@ -2,7 +2,8 @@ import { Injectable, Inject } from '@nestjs/common';
 import type { IAuthUserAdapter, AuthUserData } from '../../domain/interfaces/auth-user-adapter.interface.js';
 import type { IUserRepository } from '../../../user/domain/interfaces/IUserRepository.js';
 import { USER_REPOSITORY } from '../../../user/infrastructure/constants/user-repository.constants.js';
-import { UserDtoEntityInfrastructure } from '../../../user/infrastructure/dto/user.dto.js';
+//import { UserDtoEntityInfrastructure } from '../../../user/infrastructure/dto/user.dto.js';
+import { UserEntity } from 'src/user/domain/entities/user.entity';
 
 @Injectable()
 export class UserRepositoryAdapter implements IAuthUserAdapter {
@@ -19,7 +20,7 @@ export class UserRepositoryAdapter implements IAuthUserAdapter {
       return null;
     }
 
-    return this.toAuthUserData(user);
+    return this.toAuthUserData(user); 
   }
 
   async existsByEmail(email: string): Promise<boolean> {
@@ -33,20 +34,24 @@ export class UserRepositoryAdapter implements IAuthUserAdapter {
     password: string;
     role: string;
   }): Promise<AuthUserData> {
-    const userEntity = new UserDtoEntityInfrastructure(
-      userData.name,
-      userData.email,
-      userData.phone,
-      userData.password,
-      userData.role,
-    );
+    const userEntity = new UserEntity(
+    userData.name,
+    userData.email,
+    userData.phone,
+    userData.password,
+    userData.role,
+    undefined,  // providerData
+    [],         // socialMediaLink
+    new Date(),
+    new Date(),
+  );
 
     const savedUser = await this.userRepository.save(userEntity);
 
     return this.toAuthUserData(savedUser);
   }
 
-  private toAuthUserData(user: UserDtoEntityInfrastructure): AuthUserData {
+  private toAuthUserData(user: UserEntity): AuthUserData {
     return {
       id: user.getId()!,
       name: user.getName(),
@@ -55,5 +60,5 @@ export class UserRepositoryAdapter implements IAuthUserAdapter {
       password: user.getPassword(),
       role: user.getRole(),
     };
-  }
+  } 
 }

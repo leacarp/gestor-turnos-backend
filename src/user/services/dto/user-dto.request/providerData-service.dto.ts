@@ -1,15 +1,14 @@
-import { ProviderDataDtoEntity } from 'src/user/infrastructure/dto/providerData.dto';
 import { SocialMediaDtoService } from './socialMedia-service.dto';
 
 export class ProviderDataDtoService {
    
     private readonly publicInfo : string;
     private readonly address : string;
-    private readonly minimumAdvance : string;
+    private readonly minimumAdvance : number;
     private readonly serviceType : string;
     private readonly socialMedia : SocialMediaDtoService[];
 
-    constructor (publicInfo : string, address : string, minimumAdvance: string, serviceType: string, socialMedia: SocialMediaDtoService[]) {
+    constructor (publicInfo : string, address : string, minimumAdvance: number, serviceType: string, socialMedia: SocialMediaDtoService[]) {
         this.publicInfo = publicInfo;
         this.address = address;
         this.minimumAdvance = minimumAdvance;
@@ -25,7 +24,7 @@ export class ProviderDataDtoService {
         return this.address;
     }
 
-    getMinimumAdvance() : string{
+    getMinimumAdvance() : number{
         return this.minimumAdvance;
     }
 
@@ -35,17 +34,6 @@ export class ProviderDataDtoService {
 
     getSocialMedia() : SocialMediaDtoService[]{
         return this.socialMedia;
-    }
-
-    toEntityDto(): ProviderDataDtoEntity {
-        const socialMediaEntity = this.socialMedia.map(social => social.toEntityDto());
-        return new ProviderDataDtoEntity(
-            this.publicInfo,
-            this.address,
-            this.minimumAdvance,
-            this.serviceType,
-            socialMediaEntity
-        );
     }
 
 }

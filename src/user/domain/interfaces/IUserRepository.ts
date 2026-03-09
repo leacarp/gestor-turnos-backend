@@ -1,13 +1,13 @@
-import { UserDtoEntityInfrastructure } from "src/user/infrastructure/dto/user.dto";
-import { UpdateUserDtoEntity } from "src/user/infrastructure/dto/update-user.dto";
+import { UserEntity } from "../entities/user.entity";
 
 
 export interface IUserRepository{
-    save(dto: UserDtoEntityInfrastructure) : Promise<UserDtoEntityInfrastructure>;
+    save(user: UserEntity) : Promise<UserEntity>;
     existsByEmail(email: string): Promise<boolean>;
-    findByEmail(email: string): Promise<UserDtoEntityInfrastructure | null>;
-    findById(id: string): Promise<UserDtoEntityInfrastructure | null>;
-    updateUser(id: string, updateUserDtoEntity: UpdateUserDtoEntity): Promise<UserDtoEntityInfrastructure>
+    existsByPhone(phone : string) : Promise<boolean>;
+    findByEmail(email: string): Promise<UserEntity | null>;
+    findById(id: string): Promise<UserEntity | null>;
+    updateUser(id: string, updateUserDtoEntity: UserEntity): Promise<UserEntity>
     deleteUser(id: string, role : string) : Promise<void>;
-    findAllUsers(): Promise<UserDtoEntityInfrastructure[]>;
+    findAllUsers(): Promise<UserEntity[]>;
 }

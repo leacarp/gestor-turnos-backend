@@ -1,15 +1,15 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { CreateUserDtoRequest } from "src/user/presentation/dtos/user-dto-request/create-user.dto";
-import { ProviderDataDtoRequest } from "src/user/presentation/dtos/user-dto-request/providerData.dto";
-import { UpdateUserDtoRequest } from "src/user/presentation/dtos/user-dto-request/update-user.dto";
-import { UpdateProviderDataDtoRequest } from "src/user/presentation/dtos/user-dto-request/update-providerData.dto";
-import { UpdateSocialMediaDtoRequest } from "src/user/presentation/dtos/user-dto-request/update-socialMedia.dto";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { UserDtoService } from "../dto/user-dto.request/user-service.dto";
+import { ProviderDataDtoService } from "../dto/user-dto.request/providerData-service.dto";
+import { UpdateUserDtoService } from "../dto/user-dto.request/update-user-service.dto";
+import { UpdateProviderDataDtoService } from "../dto/user-dto.request/update-providerData-service.dto";
+import { UpdateSocialMediaDtoService } from "../dto/user-dto.request/updateSocialMedia-service.dto";
 import { BaseStrategy } from "./baseStrategy";
 
 @Injectable()
 export class ProviderStrategy extends BaseStrategy{
     
-    validateCreate(user: CreateUserDtoRequest): void {
+    validateCreate(user: UserDtoService): void {
         this.validateName(user.getName());
         this.validateEmail(user.getEmail());
         this.validatePhone(user.getPhone());
@@ -21,12 +21,12 @@ export class ProviderStrategy extends BaseStrategy{
 
     }
 
-    async processCreation(user: CreateUserDtoRequest): Promise<void> {
+    async processCreation(user: UserDtoService): Promise<void> {
         
         
     }
 
-    validateUpdate(user: UpdateUserDtoRequest): void {
+    validateUpdate(user: UpdateUserDtoService): void {
         this.validateUpdateBasicFields(user);
         const providerData = user.getProviderData();
         if (providerData) {
@@ -35,7 +35,7 @@ export class ProviderStrategy extends BaseStrategy{
         
     }
 
-    async processUpdate(user: UpdateUserDtoRequest): Promise<void> {
+    async processUpdate(user: UpdateUserDtoService): Promise<void> {
         
     }
 
@@ -44,37 +44,37 @@ export class ProviderStrategy extends BaseStrategy{
         
     }
     
-    private ensureProviderDataExistsCreate(providerData: ProviderDataDtoRequest | undefined): asserts providerData is ProviderDataDtoRequest {
+    private ensureProviderDataExistsCreate(providerData: ProviderDataDtoService | undefined): asserts providerData is ProviderDataDtoService {
         if (!providerData) {
-            throw new NotFoundException('Provider debe tener información adicional');
+            throw new BadRequestException('Provider debe tener información adicional');
         }
     }
 
-    private validateProviderDataContentCreate(providerData: ProviderDataDtoRequest): void {
+    private validateProviderDataContentCreate(providerData: ProviderDataDtoService): void {
         if (providerData.getSocialMedia() && providerData.getSocialMedia().length === 0) {
-            throw new NotFoundException('Provider debe tener al menos una red social');
+            throw new BadRequestException('Provider debe tener al menos una red social');
         }
 
         const publicInfo = providerData.getPublicInfo();
         if (!publicInfo || publicInfo.length < 20) {
-            throw new NotFoundException('Información pública insuficiente (mínimo 20 caracteres)');
+            throw new BadRequestException('Información pública insuficiente (mínimo 20 caracteres)');
         }
     }
 
-    private validateProviderDataContentUpdate(providerData: UpdateProviderDataDtoRequest): void {
+    private validateProviderDataContentUpdate(providerData: UpdateProviderDataDtoService): void {
         this.validateSocialMediaUpdate(providerData.getSocialMedia());
         this.validatePublicInfoUpdate(providerData.getPublicInfo());
     }
 
-    private validateSocialMediaUpdate(socialMedia: UpdateSocialMediaDtoRequest[] | undefined): void {
+    private validateSocialMediaUpdate(socialMedia: UpdateSocialMediaDtoService[] | undefined): void {
         if (socialMedia !== undefined && socialMedia.length === 0) {
-            throw new NotFoundException('Provider debe tener al menos una red social');
+            throw new BadRequestException('Provider debe tener al menos una red social');
         }
     }
 
     private validatePublicInfoUpdate(publicInfo: string | undefined): void {
         if (publicInfo && publicInfo.length < 20) {
-            throw new NotFoundException('Información pública insuficiente (mínimo 20 caracteres)');
+            throw new BadRequestException('Información pública insuficiente (mínimo 20 caracteres)');
         }
     }
 }

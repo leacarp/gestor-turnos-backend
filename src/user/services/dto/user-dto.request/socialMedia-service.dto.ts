@@ -1,5 +1,3 @@
-import { SocialMediaDtoEntity } from "src/user/infrastructure/dto/socialMedia.dto";
-
 export class SocialMediaDtoService {
 
     private readonly platform : string;
@@ -10,15 +8,11 @@ export class SocialMediaDtoService {
         this.url = url;
     }
 
-    getName() : string{
+    getPlatform() : string{
         return this.platform;
     }
 
     getUrl() : string{
         return this.url;
-    }
-
-    toEntityDto(): SocialMediaDtoEntity {
-        return new SocialMediaDtoEntity(this.platform, this.url);
     }
 }

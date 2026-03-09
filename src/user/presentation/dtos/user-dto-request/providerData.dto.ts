@@ -15,7 +15,7 @@ export class ProviderDataDtoRequest {
 
     @IsString()
     @IsNotEmpty()
-    private readonly minimumAdvance : string;
+    private readonly minimumAdvance : number;
 
     @IsString()
     @IsNotEmpty()
@@ -27,7 +27,7 @@ export class ProviderDataDtoRequest {
     @ArrayMinSize(1)
     private readonly socialMedia : SocialMediaDtoRequest[];
 
-    constructor (publicInfo : string, address : string, minimumAdvance: string, serviceType: string, socialMedia: SocialMediaDtoRequest[]) {
+    constructor (publicInfo : string, address : string, minimumAdvance: number, serviceType: string, socialMedia: SocialMediaDtoRequest[]) {
         this.publicInfo = publicInfo;
         this.address = address;
         this.minimumAdvance = minimumAdvance;
@@ -43,7 +43,7 @@ export class ProviderDataDtoRequest {
         return this.address;
     }
 
-    getMinimumAdvance() : string{
+    getMinimumAdvance() : number{
         return this.minimumAdvance;
     }
 
