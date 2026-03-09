@@ -10,11 +10,4 @@ export interface AuthUserData {
 export interface IAuthUserAdapter {
   findByEmail(email: string): Promise<AuthUserData | null>;
   existsByEmail(email: string): Promise<boolean>;
-  createUser(userData: {
-    name: string;
-    email: string;
-    phone: string;
-    password: string;
-    role: string;
-  }): Promise<AuthUserData>;
 }

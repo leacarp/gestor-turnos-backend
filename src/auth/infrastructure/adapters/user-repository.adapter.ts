@@ -2,7 +2,6 @@ import { Injectable, Inject } from '@nestjs/common';
 import type { IAuthUserAdapter, AuthUserData } from '../../domain/interfaces/auth-user-adapter.interface.js';
 import type { IUserRepository } from '../../../user/domain/interfaces/IUserRepository.js';
 import { USER_REPOSITORY } from '../../../user/infrastructure/constants/user-repository.constants.js';
-//import { UserDtoEntityInfrastructure } from '../../../user/infrastructure/dto/user.dto.js';
 import { UserEntity } from 'src/user/domain/entities/user.entity';
 
 @Injectable()
@@ -25,30 +24,6 @@ export class UserRepositoryAdapter implements IAuthUserAdapter {
 
   async existsByEmail(email: string): Promise<boolean> {
     return this.userRepository.existsByEmail(email);
-  }
-
-  async createUser(userData: {
-    name: string;
-    email: string;
-    phone: string;
-    password: string;
-    role: string;
-  }): Promise<AuthUserData> {
-    const userEntity = new UserEntity(
-    userData.name,
-    userData.email,
-    userData.phone,
-    userData.password,
-    userData.role,
-    undefined,  // providerData
-    [],         // socialMediaLink
-    new Date(),
-    new Date(),
-  );
-
-    const savedUser = await this.userRepository.save(userEntity);
-
-    return this.toAuthUserData(savedUser);
   }
 
   private toAuthUserData(user: UserEntity): AuthUserData {

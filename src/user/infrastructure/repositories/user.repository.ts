@@ -74,12 +74,7 @@ export class UserRepository implements IUserRepository{
         if (role === 'provider') {
         console.log('📦 Marcando provider como inactivo (soft delete)');
         const result = await this.userModel.findByIdAndUpdate(
-            id,
-            {
-                isActive: false,
-                deletedAt: new Date(),
-            },
-            { new: true }
+            id, { isActive: false }, { new: true }
         );
 
         if (!result) {
@@ -139,7 +134,8 @@ export class UserRepository implements IUserRepository{
             user.socialMediaLink ?? [],
             user.createdAt,
             user.updatedAt,
-            user.id.toString()
+            user.id.toString(),
+            user.isActive
         );
     }
 
@@ -175,6 +171,7 @@ export class UserRepository implements IUserRepository{
     }
 
     private buildUpdateDataUser(user: UserEntity): any {
+        
         const updateData: any = { updatedAt: new Date(),};
 
         if (user.getName()) {
@@ -201,6 +198,10 @@ export class UserRepository implements IUserRepository{
             if (Object.keys(providerDataUpdate).length > 0) {
                 updateData.providerData = providerDataUpdate;
             }
+        }
+
+        if (user.getIsActive() !== undefined) {
+            updateData.isActive = user.getIsActive();
         }
 
         return updateData;

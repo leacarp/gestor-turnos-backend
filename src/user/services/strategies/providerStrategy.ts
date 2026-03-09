@@ -51,7 +51,7 @@ export class ProviderStrategy extends BaseStrategy{
     }
 
     private validateProviderDataContentCreate(providerData: ProviderDataDtoService): void {
-        if (providerData.getSocialMedia() && providerData.getSocialMedia().length === 0) {
+        if (!providerData.getSocialMedia() || providerData.getSocialMedia().length === 0) {
             throw new BadRequestException('Provider debe tener al menos una red social');
         }
 

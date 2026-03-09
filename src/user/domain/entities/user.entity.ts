@@ -13,8 +13,9 @@ export class UserEntity {
     private _socialMediaLink : SocialMediaLinkEntity[];
     private _createdAt: Date;
     private _updatedAt: Date;
+    private _isActive : boolean;
 
-    constructor(name: string, email: string, phone: string, password: string, role: string, providerData: ProviderDataEntity | undefined, socialMediaLink: SocialMediaLinkEntity[], createdAt: Date, updatedAt: Date, id?: string){
+    constructor(name: string, email: string, phone: string, password: string, role: string, providerData: ProviderDataEntity | undefined, socialMediaLink: SocialMediaLinkEntity[], createdAt: Date, updatedAt: Date, id?: string, isActive: boolean = true){
         this._name = name;
         this._email = email;
         this._phone = phone;
@@ -24,6 +25,7 @@ export class UserEntity {
         this._socialMediaLink = socialMediaLink;
         this._createdAt = createdAt;
         this._updatedAt = updatedAt;
+        this._isActive = isActive;
         this._id = id;
     }
 
@@ -61,6 +63,10 @@ export class UserEntity {
 
     getUpdatedAt() : Date{
         return this._updatedAt;
+    }
+
+    getIsActive() : boolean{
+        return this._isActive;
     }
 
     getId() : string | undefined{
