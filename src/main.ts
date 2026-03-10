@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
+import { MongoExceptionFilter } from './common/filters/mongo-exception.filter';
 
 async function bootstrap() {
   try{
@@ -17,6 +18,7 @@ async function bootstrap() {
         },
       }),
     );
+    app.useGlobalFilters(new MongoExceptionFilter());
     const globalPrefix = 'api';
     app.setGlobalPrefix(globalPrefix);
     
