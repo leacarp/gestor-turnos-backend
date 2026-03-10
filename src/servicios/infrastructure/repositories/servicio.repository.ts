@@ -2,8 +2,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import type { IServicioRepository } from '../../domain/interfaces/servicio-repository.interface.js';
+import { ServicioEntity } from '../../domain/entities/servicio.entity.js';
 import { Servicio, ServicioDocument } from '../schemas/servicio.schema.js';
-import { ServicioInfrastructureDto } from '../dto/servicio-infrastructure.dto.js';
 
 @Injectable()
 export class ServicioRepository implements IServicioRepository {
@@ -13,47 +13,47 @@ export class ServicioRepository implements IServicioRepository {
     private readonly servicioModel: Model<ServicioDocument>,
   ) {}
 
-  async create(dto: ServicioInfrastructureDto): Promise<ServicioInfrastructureDto> {
+  async create(entity: ServicioEntity): Promise<ServicioEntity> {
     const servicio = new this.servicioModel({
-      nombre: dto.getNombre(),
-      duracion: dto.getDuracion(),
-      precio: dto.getPrecio(),
-      proveedorId: new Types.ObjectId(dto.getProveedorId()),
+      nombre: entity.getNombre(),
+      duracion: entity.getDuracion(),
+      precio: entity.getPrecio(),
+      proveedorId: new Types.ObjectId(entity.getProveedorId()),
     });
 
     const saved = await servicio.save();
 
-    return this.toInfrastructureDto(saved);
+    return this.toEntity(saved);
   }
 
-  async findById(id: string): Promise<ServicioInfrastructureDto | null> {
+  async findById(id: string): Promise<ServicioEntity | null> {
     const servicio = await this.servicioModel.findById(id);
 
     if (!servicio) {
       return null;
     }
 
-    return this.toInfrastructureDto(servicio);
+    return this.toEntity(servicio);
   }
 
-  async findAll(): Promise<ServicioInfrastructureDto[]> {
+  async findAll(): Promise<ServicioEntity[]> {
     const servicios = await this.servicioModel.find();
 
-    return servicios.map((s) => this.toInfrastructureDto(s));
+    return servicios.map((s) => this.toEntity(s));
   }
 
-  async findByProveedor(proveedorId: string): Promise<ServicioInfrastructureDto[]> {
+  async findByProveedor(proveedorId: string): Promise<ServicioEntity[]> {
     const servicios = await this.servicioModel.find({
       proveedorId: new Types.ObjectId(proveedorId),
     });
 
-    return servicios.map((s) => this.toInfrastructureDto(s));
+    return servicios.map((s) => this.toEntity(s));
   }
 
   async update(
     id: string,
     data: { nombre?: string; duracion?: number; precio?: number },
-  ): Promise<ServicioInfrastructureDto | null> {
+  ): Promise<ServicioEntity | null> {
     const updateData: Record<string, unknown> = {};
 
     if (data.nombre !== undefined) updateData.nombre = data.nombre;
@@ -70,7 +70,7 @@ export class ServicioRepository implements IServicioRepository {
       return null;
     }
 
-    return this.toInfrastructureDto(updated);
+    return this.toEntity(updated);
   }
 
   async delete(id: string): Promise<void> {
@@ -81,15 +81,15 @@ export class ServicioRepository implements IServicioRepository {
     }
   }
 
-  private toInfrastructureDto(servicio: ServicioDocument): ServicioInfrastructureDto {
-    return new ServicioInfrastructureDto(
-      servicio.nombre,
-      servicio.duracion,
-      servicio.precio,
-      servicio.proveedorId.toString(),
-      servicio.createdAt!,
-      servicio.updatedAt,
-      servicio._id.toString(),
+  private toEntity(doc: ServicioDocument): ServicioEntity {
+    return new ServicioEntity(
+      doc.nombre,
+      doc.duracion,
+      doc.precio,
+      doc.proveedorId.toString(),
+      doc.createdAt,
+      doc.updatedAt,
+      doc._id.toString(),
     );
   }
 }

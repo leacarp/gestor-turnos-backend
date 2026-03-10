@@ -1,18 +1,18 @@
-import { ServicioInfrastructureDto } from '../../infrastructure/dto/servicio-infrastructure.dto.js';
+import { ServicioEntity } from '../entities/servicio.entity.js';
 
 export interface IServicioRepository {
-  create(dto: ServicioInfrastructureDto): Promise<ServicioInfrastructureDto>;
+  create(entity: ServicioEntity): Promise<ServicioEntity>;
 
-  findById(id: string): Promise<ServicioInfrastructureDto | null>;
+  findById(id: string): Promise<ServicioEntity | null>;
 
-  findAll(): Promise<ServicioInfrastructureDto[]>;
+  findAll(): Promise<ServicioEntity[]>;
 
-  findByProveedor(proveedorId: string): Promise<ServicioInfrastructureDto[]>;
+  findByProveedor(proveedorId: string): Promise<ServicioEntity[]>;
 
   update(
     id: string,
     data: { nombre?: string; duracion?: number; precio?: number },
-  ): Promise<ServicioInfrastructureDto | null>;
+  ): Promise<ServicioEntity | null>;
 
   delete(id: string): Promise<void>;
 }

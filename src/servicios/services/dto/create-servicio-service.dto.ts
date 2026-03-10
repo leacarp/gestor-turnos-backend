@@ -1,4 +1,4 @@
-import { ServicioInfrastructureDto } from '../../infrastructure/dto/servicio-infrastructure.dto.js';
+import { ServicioEntity } from '../../domain/entities/servicio.entity.js';
 
 export class CreateServicioServiceDto {
   private readonly nombre: string;
@@ -23,8 +23,8 @@ export class CreateServicioServiceDto {
     return this.precio;
   }
 
-  toInfrastructureDto(proveedorId: string): ServicioInfrastructureDto {
-    return new ServicioInfrastructureDto(
+  toEntity(proveedorId: string): ServicioEntity {
+    return new ServicioEntity(
       this.nombre,
       this.duracion,
       this.precio,

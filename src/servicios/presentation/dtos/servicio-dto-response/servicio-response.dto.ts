@@ -1,4 +1,5 @@
 import { Expose } from 'class-transformer';
+import { ServicioEntity } from '../../../domain/entities/servicio.entity.js';
 
 export class ServicioResponseDto {
   @Expose()
@@ -33,5 +34,16 @@ export class ServicioResponseDto {
     this.precio = precio;
     this.proveedorId = proveedorId;
     this.createdAt = createdAt;
+  }
+
+  static fromEntity(entity: ServicioEntity): ServicioResponseDto {
+    return new ServicioResponseDto(
+      entity.getId()!,
+      entity.getNombre(),
+      entity.getDuracion(),
+      entity.getPrecio(),
+      entity.getProveedorId(),
+      entity.getCreatedAt()!,
+    );
   }
 }

@@ -21,7 +21,7 @@ export class UpdateServicioServiceDto {
     return this.precio;
   }
 
-  toInfrastructureUpdateData(): {
+  toUpdateData(): {
     nombre?: string;
     duracion?: number;
     precio?: number;

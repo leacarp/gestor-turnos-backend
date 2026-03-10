@@ -1,17 +1,15 @@
-import { CreateServicioServiceDto } from '../../services/dto/create-servicio-service.dto.js';
-import { UpdateServicioServiceDto } from '../../services/dto/update-servicio-service.dto.js';
-import { ServicioResponseDto } from '../../presentation/dtos/servicio-dto-response/servicio-response.dto.js';
+import { ServicioEntity } from '../entities/servicio.entity.js';
 
 export interface IServicioService {
-  create(dto: CreateServicioServiceDto, proveedorId: string): Promise<ServicioResponseDto>;
+  create(nombre: string, duracion: number, precio: number, proveedorId: string): Promise<ServicioEntity>;
 
-  findById(id: string): Promise<ServicioResponseDto>;
+  findById(id: string): Promise<ServicioEntity>;
 
-  findAll(): Promise<ServicioResponseDto[]>;
+  findAll(): Promise<ServicioEntity[]>;
 
-  findByProveedor(proveedorId: string): Promise<ServicioResponseDto[]>;
+  findByProveedor(proveedorId: string): Promise<ServicioEntity[]>;
 
-  update(id: string, dto: UpdateServicioServiceDto, proveedorId: string): Promise<ServicioResponseDto>;
+  update(id: string, data: { nombre?: string; duracion?: number; precio?: number }, proveedorId: string): Promise<ServicioEntity>;
 
   delete(id: string, proveedorId: string): Promise<void>;
 }
