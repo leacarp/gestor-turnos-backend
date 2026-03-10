@@ -1,14 +1,14 @@
 export class SocialMediaLinkEntity{
-    private _name : string
+    private _platform : string
     private _url : string
 
-    constructor(name: string, url: string){
-        this._name = name;
+    constructor(platform: string, url: string){
+        this._platform = platform;
         this._url= url;
     }
 
-    getName() : string{
-        return this._name;
+    getPlatform() : string{
+        return this._platform;
     }
 
     getUrl() : string{

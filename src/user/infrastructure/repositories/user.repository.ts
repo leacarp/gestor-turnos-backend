@@ -3,45 +3,41 @@ import { NotFoundException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { IUserRepository } from 'src/user/domain/interfaces/IUserRepository';
 import {User as UserSchema, UserDocument} from '../schemas/user.schema';
-import { UserDtoEntityInfrastructure } from '../dto/user.dto';
-import { ProviderDataDtoEntity } from '../dto/providerData.dto';
-import { SocialMediaDtoEntity } from '../dto/socialMedia.dto';
-import { UpdateUserDtoEntity } from '../dto/update-user.dto';
-import { UpdateProviderDataDtoEntity } from '../dto/update-providerData.dto';
+import { UserEntity } from 'src/user/domain/entities/user.entity';
+import { ProviderDataEntity } from 'src/user/domain/entities/providerData.entity';
+import { SocialMediaLinkEntity } from 'src/user/domain/entities/socialMediaLink.entity';
 
 @Injectable()
 export class UserRepository implements IUserRepository{
     constructor(@InjectModel(UserSchema.name) private userModel: Model<UserDocument>) {}
 
-    async save(entityDto: UserDtoEntityInfrastructure): Promise<UserDtoEntityInfrastructure> {
-        const providerDataForDb = entityDto.getProviderData() ? this.mapProviderDataDtoToDb(entityDto.getProviderData()!) : undefined;
+    async save(user: UserEntity): Promise<UserEntity> {
+        const providerDataForDb = user.getProviderData() ? this.mapProviderDataDtoToEntity(user.getProviderData()!) : undefined;
 
-        const user = new this.userModel({
-            name: entityDto.getName(),
-            email: entityDto.getEmail(),
-            phone: entityDto.getPhone(),
-            password: entityDto.getPassword(),
-            role: entityDto.getRole(),
+        const doc = new this.userModel({
+            name: user.getName(),
+            email: user.getEmail(),
+            phone: user.getPhone(),
+            password: user.getPassword(),
+            role: user.getRole(),
             providerData: providerDataForDb,
-            createdAt: entityDto.getCreatedAt()
         });
 
-        const savedUser = await user.save();
-
-        return this.mapDocumentToDto(savedUser);
+        const saved = await doc.save();
+        return this.mapDocumentToEntity(saved);
     }
 
-    async findByEmail(email: string): Promise<UserDtoEntityInfrastructure | null> {
+    async findByEmail(email: string): Promise<UserEntity | null> {
         const user = await this.userModel.findOne({ email });
         if (!user) {
             console.log('❌ Usuario no encontrado');
             return null;
         }
         console.log('✓ Usuario encontrado');
-        return this.mapDocumentToDto(user);
+        return this.mapDocumentToEntity(user);
     }
 
-    async findById(id: string): Promise<UserDtoEntityInfrastructure | null> {
+    async findById(id: string): Promise<UserEntity | null> {
         console.log(`📖 Repository: Buscando usuario por ID: ${id}`);
 
         const user = await this.userModel.findById(id);
@@ -52,11 +48,11 @@ export class UserRepository implements IUserRepository{
         }
 
         console.log('✓ Usuario encontrado');
-        return this.mapDocumentToDto(user);
+        return this.mapDocumentToEntity(user);
     }
 
-    async updateUser(id: string, updateUserDtoEntity: UpdateUserDtoEntity): Promise<UserDtoEntityInfrastructure> {
-        const updateData = this.buildUpdateDataUser(updateUserDtoEntity);
+    async updateUser(id: string, user: UserEntity): Promise<UserEntity> {
+        const updateData = this.buildUpdateDataUser(user);
 
         const updatedUser = await this.userModel.findByIdAndUpdate(
             id,
@@ -70,7 +66,7 @@ export class UserRepository implements IUserRepository{
         }
 
         console.log('✓ Usuario actualizado');
-        return this.mapDocumentToDto(updatedUser);
+        return this.mapDocumentToEntity(updatedUser);
     }
 
     async deleteUser(id: string, role : string): Promise<void> {
@@ -99,22 +95,22 @@ export class UserRepository implements IUserRepository{
         }
     }
 
-    async findAllUsers(): Promise<UserDtoEntityInfrastructure[]> {
+    async findAllUsers(): Promise<UserEntity[]> {
         console.log('📖 Repository: Obteniendo todos los usuarios...');
 
         const users = await this.userModel.find();
 
         console.log(`✓ ${users.length} usuarios encontrados`);
-        return users.map(user => this.mapDocumentToDto(user));
+        return users.map(user => this.mapDocumentToEntity(user));
     }
 
-    async findByRole(role: string): Promise<UserDtoEntityInfrastructure[]> {
+    async findByRole(role: string): Promise<UserEntity[]> {
         console.log(`📖 Repository: Buscando usuarios con rol: ${role}`);
 
         const users = await this.userModel.find({ role });
 
         console.log(`✓ ${users.length} usuarios encontrados`);
-        return users.map(user => this.mapDocumentToDto(user));
+        return users.map(user => this.mapDocumentToEntity(user));
     }
 
     async existsByEmail(email: string): Promise<boolean> {
@@ -123,40 +119,46 @@ export class UserRepository implements IUserRepository{
         const exists = await this.userModel.exists({ email });
 
         return !!exists;
-    } 
+    }
 
-    private mapDocumentToDto(user: any): UserDtoEntityInfrastructure {
-        const providerDataEntity = user.providerData ? this.mapProviderDataToDto(user.providerData) : undefined;
-        return new UserDtoEntityInfrastructure(
+    async existsByPhone(phone: string): Promise<boolean> {
+        console.log(`🔍 Repository: Verificando si existe phone: ${phone}`);
+        const exists = await this.userModel.exists({ phone });
+        return !!exists;
+    }
+
+    private mapDocumentToEntity(user: any): UserEntity {
+        const providerDataEntity = user.providerData ? this.mapProviderDataToEntity(user.providerData) : undefined;
+        return new UserEntity(
             user.name,
             user.email,
             user.phone,
             user.password,
             user.role,
             providerDataEntity,
+            user.socialMediaLink ?? [],
             user.createdAt,
             user.updatedAt,
-            user.isActive,
             user.id.toString()
         );
     }
 
-    private mapProviderDataToDto(providerData: any): ProviderDataDtoEntity {
-        return new ProviderDataDtoEntity(
+    private mapProviderDataToEntity(providerData: any): ProviderDataEntity {
+        return new ProviderDataEntity(
             providerData.publicInfo,
             providerData.address,
             providerData.minimumAdvance,
             providerData.serviceType,
             providerData.socialMedia.map(
-                (social: any) => new SocialMediaDtoEntity(social.platform, social.url)
+                (social: any) => new SocialMediaLinkEntity(social.platform, social.url)
             )
         );
     }
 
-    private mapProviderDataDtoToDb(providerData: ProviderDataDtoEntity): {
+    private mapProviderDataDtoToEntity(providerData: ProviderDataEntity): {
         publicInfo: string;
         address: string;
-        minimumAdvance: string;
+        minimumAdvance: number;
         serviceType: string;
         socialMedia: { platform: string; url: string }[];
     } {
@@ -165,35 +167,35 @@ export class UserRepository implements IUserRepository{
             address: providerData.getAddress(),
             minimumAdvance: providerData.getMinimumAdvance(),
             serviceType: providerData.getServiceType(),
-            socialMedia: providerData.getSocialMedia().map(social => ({
+            socialMedia: providerData.getSocialMediaLink().map(social => ({
                 platform: social.getPlatform(),
                 url: social.getUrl(),
             })),
         };
     }
 
-    private buildUpdateDataUser(userDtoEntity: UpdateUserDtoEntity): any {
+    private buildUpdateDataUser(user: UserEntity): any {
         const updateData: any = { updatedAt: new Date(),};
 
-        if (userDtoEntity.getName()) {
-            updateData.name = userDtoEntity.getName();
+        if (user.getName()) {
+            updateData.name = user.getName();
         }
 
-        if (userDtoEntity.getEmail()) {
-            updateData.email = userDtoEntity.getEmail();
+        if (user.getEmail()) {
+            updateData.email = user.getEmail();
         }
 
-        if (userDtoEntity.getPhone()) {
-            updateData.phone = userDtoEntity.getPhone();
+        if (user.getPhone()) {
+            updateData.phone = user.getPhone();
         }
 
-        if (userDtoEntity.getPassword()) {
-            updateData.password = userDtoEntity.getPassword();
+        if (user.getPassword()) {
+            updateData.password = user.getPassword();
         }
 
-        if (userDtoEntity.getProviderData()) {
+        if (user.getProviderData()) {
             const providerDataUpdate = this.mapUpdateProviderDataToDb(
-                userDtoEntity.getProviderData()!
+                user.getProviderData()!
             );
 
             if (Object.keys(providerDataUpdate).length > 0) {
@@ -204,7 +206,7 @@ export class UserRepository implements IUserRepository{
         return updateData;
     }
 
-    private mapUpdateProviderDataToDb(providerData: UpdateProviderDataDtoEntity): any {
+    private mapUpdateProviderDataToDb(providerData: ProviderDataEntity): any {
     const result: any = {};
 
         if (providerData.getPublicInfo()) {
@@ -223,7 +225,7 @@ export class UserRepository implements IUserRepository{
             result.serviceType = providerData.getServiceType();
         }
         
-        const socialMedia = providerData.getSocialMedia();
+        const socialMedia = providerData.getSocialMediaLink();
         if (socialMedia) {
             result.socialMedia = socialMedia.map(social => ({
                 platform: social.getPlatform(),

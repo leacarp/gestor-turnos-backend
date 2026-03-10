@@ -1,5 +1,4 @@
 import { ProviderDataDtoService } from './providerData-service.dto';
-import { UserDtoEntityInfrastructure } from 'src/user/infrastructure/dto/user.dto';
 
 export class UserDtoService {
 
@@ -43,16 +42,4 @@ export class UserDtoService {
         return this.providerData;
     }
 
-
-    toEntityDto(): UserDtoEntityInfrastructure {
-        const providerDataEntity = this.providerData ? this.providerData.toEntityDto() : undefined;
-        return new UserDtoEntityInfrastructure(
-            this.name,
-            this.email,
-            this.phone,
-            this.password,
-            this.role,
-            providerDataEntity
-        );
-    }
 }

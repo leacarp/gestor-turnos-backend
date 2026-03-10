@@ -1,7 +1,8 @@
 import { NotFoundException } from '@nestjs/common';
 import { IUserStrategy } from './userStrategy';
-import { CreateUserDtoRequest } from 'src/user/presentation/dtos/user-dto-request/create-user.dto';
-import { UpdateUserDtoRequest } from 'src/user/presentation/dtos/user-dto-request/update-user.dto';
+import { UserDtoService } from '../dto/user-dto.request/user-service.dto';
+import { UpdateUserDtoService } from '../dto/user-dto.request/update-user-service.dto';
+
 
 export abstract class BaseStrategy implements IUserStrategy {
     
@@ -34,7 +35,7 @@ export abstract class BaseStrategy implements IUserStrategy {
         }
     }
 
-    protected validateUpdateBasicFields(user: UpdateUserDtoRequest): void {
+    protected validateUpdateBasicFields(user: UpdateUserDtoService): void {
         this.validateIfPresent(user.getName(), (v) => this.validateName(v));
         this.validateIfPresent(user.getEmail(), (v) => this.validateEmail(v));
         this.validateIfPresent(user.getPhone(), (v) => this.validatePhone(v));
@@ -47,9 +48,9 @@ export abstract class BaseStrategy implements IUserStrategy {
         }
     }
 
-    abstract validateCreate(user: CreateUserDtoRequest): void;
-    abstract validateUpdate(user: UpdateUserDtoRequest): void;
-    abstract processCreation(user: CreateUserDtoRequest): Promise<void>;
-    abstract processUpdate(user: UpdateUserDtoRequest): Promise<void>;
+    abstract validateCreate(user: UserDtoService): void;
+    abstract validateUpdate(user: UpdateUserDtoService): void;
+    abstract processCreation(user: UserDtoService): Promise<void>;
+    abstract processUpdate(user: UpdateUserDtoService): Promise<void>;
     abstract processDelete(userId: string): Promise<void>;
 }

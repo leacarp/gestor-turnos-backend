@@ -1,13 +1,12 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { CreateUserDtoRequest } from "src/user/presentation/dtos/user-dto-request/create-user.dto";
 import { BaseStrategy } from "./baseStrategy";
-import { UpdateUserDtoRequest } from "src/user/presentation/dtos/user-dto-request/update-user.dto";
-
+import { UserDtoService } from "../dto/user-dto.request/user-service.dto";
+import { UpdateUserDtoService } from "../dto/user-dto.request/update-user-service.dto";
 
 @Injectable()
 export class ClientStrategy extends BaseStrategy{
 
-    validateCreate(user: CreateUserDtoRequest): void {
+    validateCreate(user: UserDtoService): void {
         this.validateName(user.getName());
         this.validateEmail(user.getEmail());
         this.validatePhone(user.getPhone());
@@ -16,19 +15,19 @@ export class ClientStrategy extends BaseStrategy{
         this.ensureNoProviderData(user);
     }
 
-    async processCreation(user: CreateUserDtoRequest): Promise<void> {
+    async processCreation(user: UserDtoService): Promise<void> {
         
     }
 
-    validateUpdate(user: UpdateUserDtoRequest): void {
+    validateUpdate(user: UpdateUserDtoService): void {
         this.validateUpdateBasicFields(user);
 
         if(user.getProviderData()){
-            throw new NotFoundException('El cliente no puede tener información de provider');
+            throw new Error('El cliente no puede tener información de provider');
         }
     }
     
-    async processUpdate(user: UpdateUserDtoRequest): Promise<void> {
+    async processUpdate(user: UpdateUserDtoService): Promise<void> {
         
     }
 
@@ -38,9 +37,9 @@ export class ClientStrategy extends BaseStrategy{
     }
 
 
-    private ensureNoProviderData(user: CreateUserDtoRequest): asserts user is CreateUserDtoRequest {
+    private ensureNoProviderData(user: UserDtoService): asserts user is UserDtoService {
         if (user.getProviderData()) {
-            throw new NotFoundException('Cliente no puede tener datos de provider');
+            throw new Error('Cliente no puede tener datos de provider');
         }
     }
     

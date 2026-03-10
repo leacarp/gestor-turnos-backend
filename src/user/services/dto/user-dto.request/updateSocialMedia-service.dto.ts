@@ -1,5 +1,3 @@
-import { UpdateSocialMediaDtoEntity } from "src/user/infrastructure/dto/updateSocialMedia.dto";
-
 export class UpdateSocialMediaDtoService {
     private readonly platform?: string;
     private readonly url?: string;
@@ -16,7 +14,4 @@ export class UpdateSocialMediaDtoService {
         return this.url; 
     }
 
-    toEntityDto(): UpdateSocialMediaDtoEntity {
-        return new UpdateSocialMediaDtoEntity(this.platform, this.url);
-    }
 }

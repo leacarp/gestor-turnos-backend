@@ -1,5 +1,3 @@
-import { ProviderDataDtoService } from './providerData-service.dto';
-import { UpdateUserDtoEntity } from 'src/user/infrastructure/dto/update-user.dto';
 import { UpdateProviderDataDtoService } from './update-providerData-service.dto';
 
 export class UpdateUserDtoService {
@@ -43,16 +41,4 @@ export class UpdateUserDtoService {
         return this.providerData; 
     }
 
-    
-    toEntityDto(): UpdateUserDtoEntity {
-        const providerDataEntity = this.providerData ? this.providerData.toEntityDto() : undefined;
-
-        return new UpdateUserDtoEntity(
-            this.name,
-            this.email,
-            this.phone,
-            this.password,
-            providerDataEntity
-        );
-    }
 }

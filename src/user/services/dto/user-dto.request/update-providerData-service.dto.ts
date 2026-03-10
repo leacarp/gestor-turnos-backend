@@ -1,5 +1,4 @@
 import { UpdateSocialMediaDtoService } from "./updateSocialMedia-service.dto";
-import { UpdateProviderDataDtoEntity } from "src/user/infrastructure/dto/update-providerData.dto";
 
 export class UpdateProviderDataDtoService {
     private readonly publicInfo?: string;
@@ -42,15 +41,4 @@ export class UpdateProviderDataDtoService {
         return this.socialMedia; 
     }
 
-    toEntityDto(): UpdateProviderDataDtoEntity {
-        const socialMediaEntity = this.socialMedia?.map(social => social.toEntityDto());
-
-        return new UpdateProviderDataDtoEntity(
-            this.publicInfo,
-            this.address,
-            this.minimumAdvance,
-            this.serviceType,
-            socialMediaEntity
-        );
-    }
 }
