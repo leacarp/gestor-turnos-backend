@@ -120,22 +120,22 @@ export class UserService implements IUserService {
 
   private mapProviderDataDtoToEntity(dto: ProviderDataDtoService): ProviderDataEntity {
     return new ProviderDataEntity(
-      dto.getPublicInfo(),
       dto.getAddress(),
       dto.getMinimumAdvance(),
       dto.getServiceType(),
-      dto.getSocialMedia()?.map(s => new SocialMediaLinkEntity(s.getPlatform(), s.getUrl())) ?? [],
+      dto.getPublicInfo(),
+      dto.getSocialMedia()?.map(s => new SocialMediaLinkEntity(s.getPlatform(), s.getUrl())),
     );
   }
   
   private mapUpdateProviderDataDtoToEntity(dto: UpdateProviderDataDtoService, current?: ProviderDataEntity): ProviderDataEntity {
     return new ProviderDataEntity(
-      dto.getPublicInfo() ?? current?.getPublicInfo() ?? '',
       dto.getAddress() ?? current?.getAddress() ?? '',
       dto.getMinimumAdvance() ? Number(dto.getMinimumAdvance()) : current?.getMinimumAdvance() ?? 0,
       dto.getServiceType() ?? current?.getServiceType() ?? '',
+      dto.getPublicInfo() ?? current?.getPublicInfo(),
       dto.getSocialMedia()?.map(s => new SocialMediaLinkEntity(s.getPlatform() ?? '', s.getUrl() ?? ''))
-        ?? current?.getSocialMediaLink() ?? [],
+        ?? current?.getSocialMediaLink(),
     );
   }
   

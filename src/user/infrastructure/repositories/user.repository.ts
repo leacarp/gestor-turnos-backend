@@ -141,18 +141,18 @@ export class UserRepository implements IUserRepository{
 
     private mapProviderDataToEntity(providerData: any): ProviderDataEntity {
         return new ProviderDataEntity(
-            providerData.publicInfo,
             providerData.address,
             providerData.minimumAdvance,
             providerData.serviceType,
-            providerData.socialMedia.map(
+            providerData.publicInfo,
+            providerData.socialMedia?.map(
                 (social: any) => new SocialMediaLinkEntity(social.platform, social.url)
-            )
+            ),
         );
     }
 
     private mapProviderDataDtoToEntity(providerData: ProviderDataEntity): {
-        publicInfo: string;
+        publicInfo?: string;
         address: string;
         minimumAdvance: number;
         serviceType: string;
