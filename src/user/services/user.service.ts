@@ -82,7 +82,7 @@ export class UserService implements IUserService {
       password = await this.hashPassword(password);
     }
 
-    const providerData = dto.getProviderData() ? this.mapUpdateProviderDataDtoToEntity(dto.getProviderData()!) : currentUser.getProviderData();
+    const providerData = dto.getProviderData() ? this.mapUpdateProviderDataDtoToEntity(dto.getProviderData()!, currentUser.getProviderData()) : currentUser.getProviderData();    
     const updatedUser = new UserEntity(
       dto.getName() ?? currentUser.getName(),
       dto.getEmail() ?? currentUser.getEmail(),
@@ -120,22 +120,22 @@ export class UserService implements IUserService {
 
   private mapProviderDataDtoToEntity(dto: ProviderDataDtoService): ProviderDataEntity {
     return new ProviderDataEntity(
-      dto.getPublicInfo(),
       dto.getAddress(),
-      dto.getMinimumAdvance(),
       dto.getServiceType(),
-      dto.getSocialMedia()?.map(s => new SocialMediaLinkEntity(s.getPlatform(), s.getUrl())) ?? [],
+      dto.getMinimumAdvance(),
+      dto.getPublicInfo(),
+      dto.getSocialMedia()?.map(s => new SocialMediaLinkEntity(s.getPlatform(), s.getUrl())),
     );
   }
   
   private mapUpdateProviderDataDtoToEntity(dto: UpdateProviderDataDtoService, current?: ProviderDataEntity): ProviderDataEntity {
     return new ProviderDataEntity(
-      dto.getPublicInfo() ?? current?.getPublicInfo() ?? '',
       dto.getAddress() ?? current?.getAddress() ?? '',
-      dto.getMinimumAdvance() ? Number(dto.getMinimumAdvance()) : current?.getMinimumAdvance() ?? 0,
       dto.getServiceType() ?? current?.getServiceType() ?? '',
+      dto.getMinimumAdvance() ? Number(dto.getMinimumAdvance()) : current?.getMinimumAdvance() ?? 0,
+      dto.getPublicInfo() ?? current?.getPublicInfo(),
       dto.getSocialMedia()?.map(s => new SocialMediaLinkEntity(s.getPlatform() ?? '', s.getUrl() ?? ''))
-        ?? current?.getSocialMediaLink() ?? [],
+        ?? current?.getSocialMediaLink(),
     );
   }
   

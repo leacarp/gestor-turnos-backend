@@ -1,22 +1,22 @@
 import { SocialMediaDtoService } from './socialMedia-service.dto';
 
 export class ProviderDataDtoService {
-   
-    private readonly publicInfo : string;
+
+    private readonly publicInfo? : string;
     private readonly address : string;
-    private readonly minimumAdvance : number;
+    private readonly minimumAdvance? : number;
     private readonly serviceType : string;
     private readonly socialMedia : SocialMediaDtoService[];
 
-    constructor (publicInfo : string, address : string, minimumAdvance: number, serviceType: string, socialMedia: SocialMediaDtoService[]) {
-        this.publicInfo = publicInfo;
+    constructor (address : string, serviceType: string, minimumAdvance?: number, publicInfo?: string, socialMedia?: SocialMediaDtoService[]) {
         this.address = address;
         this.minimumAdvance = minimumAdvance;
         this.serviceType = serviceType;
-        this.socialMedia = socialMedia;
+        this.publicInfo = publicInfo;
+        this.socialMedia = socialMedia ?? [];
     }
 
-    getPublicInfo() : string{
+    getPublicInfo() : string | undefined {
         return this.publicInfo;
     }
 
@@ -24,7 +24,7 @@ export class ProviderDataDtoService {
         return this.address;
     }
 
-    getMinimumAdvance() : number{
+    getMinimumAdvance() : number | undefined{
         return this.minimumAdvance;
     }
 
@@ -35,5 +35,4 @@ export class ProviderDataDtoService {
     getSocialMedia() : SocialMediaDtoService[]{
         return this.socialMedia;
     }
-
 }

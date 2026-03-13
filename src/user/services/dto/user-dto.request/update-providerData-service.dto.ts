@@ -3,14 +3,14 @@ import { UpdateSocialMediaDtoService } from "./updateSocialMedia-service.dto";
 export class UpdateProviderDataDtoService {
     private readonly publicInfo?: string;
     private readonly address?: string;
-    private readonly minimumAdvance?: string;
+    private readonly minimumAdvance?: number;
     private readonly serviceType?: string;
     private readonly socialMedia?: UpdateSocialMediaDtoService[];
 
     constructor(
         publicInfo?: string,
         address?: string,
-        minimumAdvance?: string,
+        minimumAdvance?: number,
         serviceType?: string,
         socialMedia?: UpdateSocialMediaDtoService[]
     ) {
@@ -29,7 +29,7 @@ export class UpdateProviderDataDtoService {
         return this.address; 
     }
 
-    getMinimumAdvance(): string | undefined { 
+    getMinimumAdvance(): number | undefined { 
         return this.minimumAdvance; 
     }
 
