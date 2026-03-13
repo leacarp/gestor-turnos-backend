@@ -86,8 +86,8 @@ export class UserController {
   const providerData = entity.getProviderData()
     ? new ProviderDataResponseDto(
         entity.getProviderData()!.getAddress(),
-        entity.getProviderData()!.getMinimumAdvance(),
         entity.getProviderData()!.getServiceType(),
+        entity.getProviderData()!.getMinimumAdvance(),
         entity.getProviderData()!.getPublicInfo(),
         entity.getProviderData()!.getSocialMediaLink().map(s =>
           new SocialMediaResponseDto(s.getPlatform(), s.getUrl())

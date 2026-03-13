@@ -142,8 +142,8 @@ export class UserRepository implements IUserRepository{
     private mapProviderDataToEntity(providerData: any): ProviderDataEntity {
         return new ProviderDataEntity(
             providerData.address,
-            providerData.minimumAdvance,
             providerData.serviceType,
+            providerData.minimumAdvance,
             providerData.publicInfo,
             providerData.socialMedia?.map(
                 (social: any) => new SocialMediaLinkEntity(social.platform, social.url)
@@ -154,7 +154,7 @@ export class UserRepository implements IUserRepository{
     private mapProviderDataDtoToEntity(providerData: ProviderDataEntity): {
         publicInfo?: string;
         address: string;
-        minimumAdvance: number;
+        minimumAdvance?: number;
         serviceType: string;
         socialMedia: { platform: string; url: string }[];
     } {
@@ -191,9 +191,7 @@ export class UserRepository implements IUserRepository{
         }
 
         if (user.getProviderData()) {
-            const providerDataUpdate = this.mapUpdateProviderDataToDb(
-                user.getProviderData()!
-            );
+            const providerDataUpdate = this.mapUpdateProviderDataToDb(user.getProviderData()!);
 
             if (Object.keys(providerDataUpdate).length > 0) {
                 updateData.providerData = providerDataUpdate;
@@ -210,7 +208,7 @@ export class UserRepository implements IUserRepository{
     private mapUpdateProviderDataToDb(providerData: ProviderDataEntity): any {
     const result: any = {};
 
-        if (providerData.getPublicInfo()) {
+        if (providerData.getPublicInfo() !== undefined) {
             result.publicInfo = providerData.getPublicInfo();
         }
 
@@ -218,7 +216,7 @@ export class UserRepository implements IUserRepository{
             result.address = providerData.getAddress();
         }
 
-        if (providerData.getMinimumAdvance()) {
+        if (providerData.getMinimumAdvance() !== undefined) {
             result.minimumAdvance = providerData.getMinimumAdvance();
         }
 

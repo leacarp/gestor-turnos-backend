@@ -1,4 +1,4 @@
-import { IsString, IsArray, ValidateNested, IsOptional } from 'class-validator';
+import { IsString, IsArray, ValidateNested, IsOptional, IsNumber } from 'class-validator';
 import { Type } from 'class-transformer';
 import { UpdateSocialMediaDtoRequest } from './update-socialMedia.dto';
 import { UpdateProviderDataDtoService } from 'src/user/services/dto/user-dto.request/update-providerData-service.dto';
@@ -12,9 +12,9 @@ export class UpdateProviderDataDtoRequest {
     @IsOptional()
     private readonly address?: string;
 
-    @IsString()
+    @IsNumber()
     @IsOptional()
-    private readonly minimumAdvance?: string;
+    private readonly minimumAdvance?: number;
 
     @IsString()
     @IsOptional()
@@ -29,7 +29,7 @@ export class UpdateProviderDataDtoRequest {
     constructor(
         publicInfo?: string,
         address?: string,
-        minimumAdvance?: string,
+        minimumAdvance?: number,
         serviceType?: string,
         socialMedia?: UpdateSocialMediaDtoRequest[]
     ) {
@@ -48,7 +48,7 @@ export class UpdateProviderDataDtoRequest {
         return this.address; 
     }
 
-    getMinimumAdvance(): string | undefined { 
+    getMinimumAdvance(): number | undefined { 
         return this.minimumAdvance; 
     }
 

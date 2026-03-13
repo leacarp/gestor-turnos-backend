@@ -4,11 +4,11 @@ export class ProviderDataDtoService {
 
     private readonly publicInfo? : string;
     private readonly address : string;
-    private readonly minimumAdvance : number;
+    private readonly minimumAdvance? : number;
     private readonly serviceType : string;
     private readonly socialMedia : SocialMediaDtoService[];
 
-    constructor (address : string, minimumAdvance: number, serviceType: string, publicInfo?: string, socialMedia?: SocialMediaDtoService[]) {
+    constructor (address : string, serviceType: string, minimumAdvance?: number, publicInfo?: string, socialMedia?: SocialMediaDtoService[]) {
         this.address = address;
         this.minimumAdvance = minimumAdvance;
         this.serviceType = serviceType;
@@ -24,7 +24,7 @@ export class ProviderDataDtoService {
         return this.address;
     }
 
-    getMinimumAdvance() : number{
+    getMinimumAdvance() : number | undefined{
         return this.minimumAdvance;
     }
 
