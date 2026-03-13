@@ -83,7 +83,6 @@ export class UserService implements IUserService {
     }
 
     const providerData = dto.getProviderData() ? this.mapUpdateProviderDataDtoToEntity(dto.getProviderData()!) : currentUser.getProviderData();
-
     const updatedUser = new UserEntity(
       dto.getName() ?? currentUser.getName(),
       dto.getEmail() ?? currentUser.getEmail(),
@@ -95,6 +94,7 @@ export class UserService implements IUserService {
       currentUser.getCreatedAt(),
       new Date(),
       currentUser.getId(),
+      dto.getIsActive() ?? currentUser.getIsActive(),
     );
 
     return this.userRepository.updateUser(userId, updatedUser);

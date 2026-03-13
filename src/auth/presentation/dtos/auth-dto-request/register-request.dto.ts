@@ -1,11 +1,6 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsEmail,
-  MinLength,
-  IsOptional,
-  IsEnum,
-} from 'class-validator';
+import {IsString, IsNotEmpty, IsEmail, MinLength, IsOptional, IsEnum, ValidateNested} from 'class-validator';
+import {Type} from 'class-transformer';
+import { ProviderDataRequestDto } from './providerData-request.dto';
 
 export class RegisterRequestDto {
   @IsString()
@@ -30,18 +25,18 @@ export class RegisterRequestDto {
   @IsEnum(['provider', 'user', 'client', 'admin'])
   private readonly role: string;
 
-  constructor(
-    name: string,
-    email: string,
-    phone: string,
-    password: string,
-    role?: string,
-  ) {
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ProviderDataRequestDto)
+  private readonly providerData?: ProviderDataRequestDto;
+
+  constructor(name: string, email: string, phone: string, password: string, role?: string, providerData?: ProviderDataRequestDto ) {
     this.name = name;
     this.email = email;
     this.phone = phone;
     this.password = password;
     this.role = role ?? 'client';
+    this.providerData = providerData;
   }
 
   getName(): string {
@@ -63,4 +58,9 @@ export class RegisterRequestDto {
   getRole(): string {
     return this.role;
   }
+  
+  getProviderData(): ProviderDataRequestDto | undefined {
+    return this.providerData;
+  }
+  
 }

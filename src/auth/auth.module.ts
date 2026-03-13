@@ -11,6 +11,7 @@ import { JwtStrategy } from './infrastructure/strategies/jwt.strategy.js';
 import { UserRepositoryAdapter } from './infrastructure/adapters/user-repository.adapter.js';
 import { AUTH_SERVICE, AUTH_USER_ADAPTER } from './infrastructure/constants/injection-tokens.js';
 
+
 @Module({
   imports: [
     UserModule,

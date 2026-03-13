@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsEnum, ValidateNested, IsOptional, MinLength } from 'class-validator';
+import { IsString, IsEmail, IsEnum, ValidateNested, IsOptional, MinLength, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 import { UpdateUserDtoService } from 'src/user/services/dto/user-dto.request/update-user-service.dto';
 import { UpdateProviderDataDtoRequest } from './update-providerData.dto';
@@ -28,18 +28,24 @@ export class UpdateUserDtoRequest {
     @IsOptional()
     private readonly providerData?: UpdateProviderDataDtoRequest;
 
+    @IsOptional()
+    @IsBoolean()
+    isActive?: boolean;
+
     constructor(
         name?: string,
         email?: string,
         phone?: string,
         password?: string,
-        providerData?: UpdateProviderDataDtoRequest
+        providerData?: UpdateProviderDataDtoRequest,
+        isActive? : boolean
     ) {
         this.name = name;
         this.email = email;
         this.phone = phone;
         this.password = password;
         this.providerData = providerData;
+        this.isActive = isActive;
     }
 
     getName(): string | undefined { 
@@ -62,6 +68,9 @@ export class UpdateUserDtoRequest {
          return this.providerData; 
     }
 
+    getIsActive() : boolean | undefined{
+        return this.isActive;
+    }
     
     toServiceDto(): UpdateUserDtoService {
         const providerDataService = this.providerData ? this.providerData.toServiceDto() : undefined;
@@ -71,7 +80,8 @@ export class UpdateUserDtoRequest {
             this.email,
             this.phone,
             this.password,
-            providerDataService
+            providerDataService, 
+            this.isActive
         );
     }
 }
