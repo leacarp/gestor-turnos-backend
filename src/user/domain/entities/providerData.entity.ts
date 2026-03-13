@@ -2,21 +2,21 @@ import { SocialMediaLinkEntity } from "./socialMediaLink.entity"
 
 
 export class ProviderDataEntity{
-    private _publicInfo : string;
+    private _publicInfo? : string;
     private _address : string;
     private _minimumAdvance : number;
     private _serviceType : string;
     private _socialMediaLink : SocialMediaLinkEntity[];
 
-    constructor (publicInfo : string, address : string, minimumAdvance : number, serviceType : string, socialMediaLink : SocialMediaLinkEntity[]){
-        this._publicInfo = publicInfo;
+    constructor (address : string, minimumAdvance : number, serviceType : string, publicInfo?: string, socialMediaLink?: SocialMediaLinkEntity[]){
         this._address = address;
         this._minimumAdvance = minimumAdvance;
         this._serviceType = serviceType;
-        this._socialMediaLink = socialMediaLink;
+        this._publicInfo = publicInfo;
+        this._socialMediaLink = socialMediaLink ?? [];
     }
 
-    getPublicInfo() : string{
+    getPublicInfo() : string | undefined {
         return this._publicInfo;
     }
 
@@ -35,6 +35,4 @@ export class ProviderDataEntity{
     getSocialMediaLink() : SocialMediaLinkEntity[]{
         return this._socialMediaLink;
     }
-
-
 }

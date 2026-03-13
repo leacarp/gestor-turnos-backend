@@ -18,7 +18,6 @@ export class ProviderStrategy extends BaseStrategy{
         const providerData = user.getProviderData();
         this.ensureProviderDataExistsCreate(providerData);
         this.validateProviderDataContentCreate(providerData);
-
     }
 
     async processCreation(user: UserDtoService): Promise<void> {
@@ -51,12 +50,8 @@ export class ProviderStrategy extends BaseStrategy{
     }
 
     private validateProviderDataContentCreate(providerData: ProviderDataDtoService): void {
-        if (!providerData.getSocialMedia() || providerData.getSocialMedia().length === 0) {
-            throw new BadRequestException('Provider debe tener al menos una red social');
-        }
-
         const publicInfo = providerData.getPublicInfo();
-        if (!publicInfo || publicInfo.length < 20) {
+        if (publicInfo && publicInfo.length < 20) {
             throw new BadRequestException('Información pública insuficiente (mínimo 20 caracteres)');
         }
     }

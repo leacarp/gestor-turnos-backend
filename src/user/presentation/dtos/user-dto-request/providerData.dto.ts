@@ -1,64 +1,65 @@
-import { IsString, IsNotEmpty, IsArray, ArrayMinSize, ValidateNested} from 'class-validator';
-import {Type} from 'class-transformer'
+import { IsString, IsNotEmpty, IsNumber, IsOptional, IsArray, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import { SocialMediaDtoRequest } from './socialMedia.dto';
 import { ProviderDataDtoService } from 'src/user/services/dto/user-dto.request/providerData-service.dto';
 
-
 export class ProviderDataDtoRequest {
+    @IsOptional()
     @IsString()
-    @IsNotEmpty()
-    private readonly publicInfo : string;
+    private readonly publicInfo?: string;
 
     @IsString()
     @IsNotEmpty()
-    private readonly address : string;
+    private readonly address: string;
+
+    @IsNumber()
+    private readonly minimumAdvance: number;
 
     @IsString()
     @IsNotEmpty()
-    private readonly minimumAdvance : number;
+    private readonly serviceType: string;
 
-    @IsString()
-    @IsNotEmpty()
-    private readonly serviceType : string;
-
-    @ValidateNested()
-    @Type(() => SocialMediaDtoRequest)
+    @IsOptional()
     @IsArray()
-    @ArrayMinSize(1)
-    private readonly socialMedia : SocialMediaDtoRequest[];
+    @ValidateNested({ each: true })
+    @Type(() => SocialMediaDtoRequest)
+    private readonly socialMedia?: SocialMediaDtoRequest[];
 
-    constructor (publicInfo : string, address : string, minimumAdvance: number, serviceType: string, socialMedia: SocialMediaDtoRequest[]) {
-        this.publicInfo = publicInfo;
+    constructor(address: string, minimumAdvance: number, serviceType: string, publicInfo?: string, socialMedia?: SocialMediaDtoRequest[]) {
         this.address = address;
         this.minimumAdvance = minimumAdvance;
         this.serviceType = serviceType;
+        this.publicInfo = publicInfo;
         this.socialMedia = socialMedia;
     }
 
-    getPublicInfo() : string{
+    getPublicInfo(): string | undefined {
         return this.publicInfo;
     }
 
-    getAddress() : string{
+    getAddress(): string {
         return this.address;
     }
 
-    getMinimumAdvance() : number{
+    getMinimumAdvance(): number {
         return this.minimumAdvance;
     }
 
-    getServiceType() : string{
+    getServiceType(): string {
         return this.serviceType;
     }
 
-    getSocialMedia() : SocialMediaDtoRequest[]{
+    getSocialMedia(): SocialMediaDtoRequest[] | undefined {
         return this.socialMedia;
     }
 
-    toServiceDto() : ProviderDataDtoService{
-        return new ProviderDataDtoService(this.publicInfo, this.address, this.minimumAdvance, 
-            this.serviceType, this.socialMedia.map(socialMedia => socialMedia.toServiceDto()))
+    toServiceDto(): ProviderDataDtoService {
+        return new ProviderDataDtoService(
+            this.address,
+            this.minimumAdvance,
+            this.serviceType,
+            this.publicInfo,
+            this.socialMedia?.map(s => s.toServiceDto()),
+        );
     }
-
-
 }

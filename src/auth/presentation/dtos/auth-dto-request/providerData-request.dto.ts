@@ -3,9 +3,9 @@ import { Type } from 'class-transformer';
 import { SocialMediaRequestDto } from './socialMedia-request.dto';
 
 export class ProviderDataRequestDto {
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  private readonly publicInfo: string;
+  private readonly publicInfo?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -24,32 +24,31 @@ export class ProviderDataRequestDto {
   @Type(() => SocialMediaRequestDto)
   private readonly socialMedia?: SocialMediaRequestDto[];
 
-  constructor(publicInfo: string, address: string, minimumAdvance: number, serviceType: string, socialMedia?: SocialMediaRequestDto[]) {
-    this.publicInfo = publicInfo;
+  constructor(address: string, minimumAdvance: number, serviceType: string, publicInfo?: string, socialMedia?: SocialMediaRequestDto[]) {
     this.address = address;
     this.minimumAdvance = minimumAdvance;
     this.serviceType = serviceType;
+    this.publicInfo = publicInfo;
     this.socialMedia = socialMedia;
   }
 
-  getPublicInfo(): string { 
-    return this.publicInfo; 
+  getPublicInfo(): string | undefined {
+    return this.publicInfo;
   }
 
-  getAddress(): string { 
-    return this.address; 
+  getAddress(): string {
+    return this.address;
   }
 
-  getMinimumAdvance(): number { 
-    return this.minimumAdvance; 
+  getMinimumAdvance(): number {
+    return this.minimumAdvance;
   }
 
-  getServiceType(): string { 
-    return this.serviceType; 
+  getServiceType(): string {
+    return this.serviceType;
   }
 
   getSocialMedia(): SocialMediaRequestDto[] | undefined {
-    return this.socialMedia; 
+    return this.socialMedia;
   }
-
 }

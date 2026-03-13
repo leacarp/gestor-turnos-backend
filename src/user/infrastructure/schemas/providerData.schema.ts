@@ -6,20 +6,20 @@ export type ProviderDataDocument = ProviderData & Document;
 
 @Schema({id: false})
 export class ProviderData{
-    @Prop({ required: true})
-    publicInfo: string;
+    @Prop({ required: false })
+    publicInfo?: string;
 
-    @Prop({required: true})
+    @Prop({ required: true })
     address: string;
 
-    @Prop({required: true})
+    @Prop({ required: true })
     minimumAdvance: number;
 
-    @Prop({required: true})
+    @Prop({ required: true })
     serviceType: string;
 
-    @Prop({type: [SocialMediaSchema] ,required: true})
-    socialMedia : SocialMedia[];
+    @Prop({ type: [SocialMediaSchema], required: false, default: [] })
+    socialMedia: SocialMedia[];
 }
 
 export const ProviderDataSchema = SchemaFactory.createForClass(ProviderData);

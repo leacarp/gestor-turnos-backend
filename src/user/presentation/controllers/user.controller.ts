@@ -85,10 +85,10 @@ export class UserController {
   private toResponseDto(entity: UserEntity): UserResponseDto {
   const providerData = entity.getProviderData()
     ? new ProviderDataResponseDto(
-        entity.getProviderData()!.getPublicInfo(),
         entity.getProviderData()!.getAddress(),
         entity.getProviderData()!.getMinimumAdvance(),
         entity.getProviderData()!.getServiceType(),
+        entity.getProviderData()!.getPublicInfo(),
         entity.getProviderData()!.getSocialMediaLink().map(s =>
           new SocialMediaResponseDto(s.getPlatform(), s.getUrl())
         ),
