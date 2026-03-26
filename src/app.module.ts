@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import { AvailabilityModule } from './availability/availability.module';
 import { AuthModule } from './auth/auth.module';
 import { ServiciosModule } from './servicios/servicios.module';
+import { TurnosModule } from './turnos/turnos.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { ServiciosModule } from './servicios/servicios.module';
     AvailabilityModule,
     AuthModule,
     ServiciosModule,
+    TurnosModule,
   ],
   controllers: [],
   providers: [],
