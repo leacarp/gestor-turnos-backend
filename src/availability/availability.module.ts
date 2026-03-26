@@ -7,6 +7,7 @@ import { AppointmentAdapter } from './infrastructure/adapters/appointment.adapte
 import { AvailabilityService } from './services/availability.service';
 import { AvailabilityController } from './presentation/controllers/availability.controller';
 import { UserModule } from 'src/user/user.module';
+import { TurnosModule } from 'src/turnos/turnos.module';
 import { UserAdapter } from './infrastructure/adapters/user.adapter';
 import { AVAILABILITY_SERVICE, AVAILABILITY_REPOSITORY, APPOINTMENT_PORT, USER_PORT } from './infrastructure/constants/injection-tokens';
 
@@ -16,7 +17,8 @@ import { AVAILABILITY_SERVICE, AVAILABILITY_REPOSITORY, APPOINTMENT_PORT, USER_P
       { name: WeeklyScheduleSchema.name, schema: WeeklyScheduleSchemaFactory },
       { name: AvailabilityExceptionSchema.name, schema: AvailabilityExceptionSchemaFactory },
     ]),
-    UserModule
+    UserModule,
+    TurnosModule,
   ],
   controllers: [AvailabilityController],
   providers: [
