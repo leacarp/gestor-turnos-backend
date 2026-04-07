@@ -8,12 +8,35 @@ export class ProviderDataEntity{
     private _serviceType : string;
     private _socialMediaLink : SocialMediaLinkEntity[];
 
-    constructor (address : string, serviceType : string, minimumAdvance? : number, publicInfo?: string, socialMediaLink?: SocialMediaLinkEntity[]){
+    // Mercado Pago OAuth (Marketplace)
+    private _mpConnected: boolean;
+    private _mpAccessToken?: string;
+    private _mpRefreshToken?: string;
+    private _mpUserId?: string;
+    private _mpTokenExpiresAt?: Date;
+
+    constructor (
+        address : string,
+        serviceType : string,
+        minimumAdvance? : number,
+        publicInfo?: string,
+        socialMediaLink?: SocialMediaLinkEntity[],
+        mpConnected?: boolean,
+        mpAccessToken?: string,
+        mpRefreshToken?: string,
+        mpUserId?: string,
+        mpTokenExpiresAt?: Date,
+    ){
         this._address = address;
         this._minimumAdvance = minimumAdvance;
         this._serviceType = serviceType;
         this._publicInfo = publicInfo;
         this._socialMediaLink = socialMediaLink ?? [];
+        this._mpConnected = mpConnected ?? false;
+        this._mpAccessToken = mpAccessToken;
+        this._mpRefreshToken = mpRefreshToken;
+        this._mpUserId = mpUserId;
+        this._mpTokenExpiresAt = mpTokenExpiresAt;
     }
 
     getPublicInfo() : string | undefined {
@@ -34,5 +57,25 @@ export class ProviderDataEntity{
 
     getSocialMediaLink() : SocialMediaLinkEntity[]{
         return this._socialMediaLink;
+    }
+
+    getMpConnected(): boolean {
+        return this._mpConnected;
+    }
+
+    getMpAccessToken(): string | undefined {
+        return this._mpAccessToken;
+    }
+
+    getMpRefreshToken(): string | undefined {
+        return this._mpRefreshToken;
+    }
+
+    getMpUserId(): string | undefined {
+        return this._mpUserId;
+    }
+
+    getMpTokenExpiresAt(): Date | undefined {
+        return this._mpTokenExpiresAt;
     }
 }

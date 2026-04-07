@@ -5,7 +5,7 @@ import { ProviderStrategy } from './strategies/providerStrategy';
 import { ClientStrategy } from './strategies/clientStrategy';
 import { AdminStrategy } from './strategies/adminStrategy';
 import { USER_REPOSITORY } from '../infrastructure/constants/user-repository.constants';
-import type { IUserRepository } from '../domain/interfaces/IUserRepository';
+import type { IUserRepository, MpCredentialsData } from '../domain/interfaces/IUserRepository';
 import * as bcrypt from 'bcrypt';
 import { UserDtoService } from './dto/user-dto.request/user-service.dto';
 import { UpdateUserDtoService } from './dto/user-dto.request/update-user-service.dto';
@@ -116,6 +116,10 @@ export class UserService implements IUserService {
   async existsProvider(providerId: string): Promise<boolean> {
     const user = await this.userRepository.findById(providerId);
     return !!user && user.getRole() === 'provider';
+  }
+
+  async updateMpCredentials(userId: string, data: MpCredentialsData): Promise<void> {
+    return this.userRepository.updateMpCredentials(userId, data);
   }
 
   private mapProviderDataDtoToEntity(dto: ProviderDataDtoService): ProviderDataEntity {

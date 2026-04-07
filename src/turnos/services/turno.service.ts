@@ -41,6 +41,14 @@ export class TurnoService implements ITurnoService {
     await this.validateClient(clienteId);
     await this.validateServicio(servicioId, proveedorId);
 
+    const necesitaSeña = await this.servicioAdapter.requiereSeña(servicioId);
+
+    if (necesitaSeña) {
+      throw new BadRequestException(
+        'Este servicio requiere el pago de una seña. Usá POST /api/mercadopago/preference para iniciar el proceso de pago.',
+      );
+    }
+
     const entity = new TurnoEntity(
       fecha,
       horaInicio,
@@ -49,6 +57,29 @@ export class TurnoService implements ITurnoService {
       servicioId,
       clienteId,
       notas,
+    );
+
+    return this.turnoRepository.create(entity);
+  }
+
+  async createFromPago(
+    fecha: Date,
+    horaInicio: string,
+    proveedorId: string,
+    servicioId: string,
+    clienteId: string,
+    pagoId: string,
+    notas?: string,
+  ): Promise<TurnoEntity> {
+    const entity = new TurnoEntity(
+      fecha,
+      horaInicio,
+      'confirmado',
+      proveedorId,
+      servicioId,
+      clienteId,
+      notas,
+      pagoId,
     );
 
     return this.turnoRepository.create(entity);

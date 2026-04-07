@@ -44,6 +44,8 @@ export class ServicioController {
       serviceDto.getDuracion(),
       serviceDto.getPrecio(),
       user.id,
+      serviceDto.getRequiereSeña(),
+      serviceDto.getPorcentajeSeña(),
     );
     return ServicioResponseDto.fromEntity(entity);
   }

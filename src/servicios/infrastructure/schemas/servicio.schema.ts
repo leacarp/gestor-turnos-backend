@@ -17,6 +17,12 @@ export class Servicio {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   proveedorId: Types.ObjectId;
 
+  @Prop({ required: false, default: false })
+  requiereSeña: boolean;
+
+  @Prop({ required: false, default: 0, min: 0, max: 100 })
+  porcentajeSeña: number;
+
   createdAt?: Date;
   updatedAt?: Date;
 }

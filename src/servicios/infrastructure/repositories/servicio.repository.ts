@@ -19,6 +19,8 @@ export class ServicioRepository implements IServicioRepository {
       duracion: entity.getDuracion(),
       precio: entity.getPrecio(),
       proveedorId: new Types.ObjectId(entity.getProveedorId()),
+      requiereSeña: entity.getRequiereSeña(),
+      porcentajeSeña: entity.getPorcentajeSeña(),
     });
 
     const saved = await servicio.save();
@@ -52,13 +54,15 @@ export class ServicioRepository implements IServicioRepository {
 
   async update(
     id: string,
-    data: { nombre?: string; duracion?: number; precio?: number },
+    data: { nombre?: string; duracion?: number; precio?: number; requiereSeña?: boolean; porcentajeSeña?: number },
   ): Promise<ServicioEntity | null> {
     const updateData: Record<string, unknown> = {};
 
     if (data.nombre !== undefined) updateData.nombre = data.nombre;
     if (data.duracion !== undefined) updateData.duracion = data.duracion;
     if (data.precio !== undefined) updateData.precio = data.precio;
+    if (data.requiereSeña !== undefined) updateData.requiereSeña = data.requiereSeña;
+    if (data.porcentajeSeña !== undefined) updateData.porcentajeSeña = data.porcentajeSeña;
 
     const updated = await this.servicioModel.findByIdAndUpdate(
       id,
@@ -87,6 +91,8 @@ export class ServicioRepository implements IServicioRepository {
       doc.duracion,
       doc.precio,
       doc.proveedorId.toString(),
+      doc.requiereSeña ?? false,
+      doc.porcentajeSeña ?? 0,
       doc.createdAt,
       doc.updatedAt,
       doc._id.toString(),

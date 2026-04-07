@@ -26,4 +26,14 @@ export interface ITurnoService {
   ): Promise<TurnoEntity>;
 
   delete(id: string, userId: string, userRole: string): Promise<void>;
+
+  createFromPago(
+    fecha: Date,
+    horaInicio: string,
+    proveedorId: string,
+    servicioId: string,
+    clienteId: string,
+    pagoId: string,
+    notas?: string,
+  ): Promise<TurnoEntity>;
 }

@@ -18,6 +18,15 @@ export class ServicioResponseDto {
   readonly proveedorId: string;
 
   @Expose()
+  readonly requiereSeña: boolean;
+
+  @Expose()
+  readonly porcentajeSeña: number;
+
+  @Expose()
+  readonly montoSeña: number;
+
+  @Expose()
   readonly createdAt: Date;
 
   constructor(
@@ -26,6 +35,9 @@ export class ServicioResponseDto {
     duracion: number,
     precio: number,
     proveedorId: string,
+    requiereSeña: boolean,
+    porcentajeSeña: number,
+    montoSeña: number,
     createdAt: Date,
   ) {
     this.id = id;
@@ -33,6 +45,9 @@ export class ServicioResponseDto {
     this.duracion = duracion;
     this.precio = precio;
     this.proveedorId = proveedorId;
+    this.requiereSeña = requiereSeña;
+    this.porcentajeSeña = porcentajeSeña;
+    this.montoSeña = montoSeña;
     this.createdAt = createdAt;
   }
 
@@ -43,6 +58,9 @@ export class ServicioResponseDto {
       entity.getDuracion(),
       entity.getPrecio(),
       entity.getProveedorId(),
+      entity.getRequiereSeña(),
+      entity.getPorcentajeSeña(),
+      entity.calcularMontoSeña(),
       entity.getCreatedAt()!,
     );
   }
