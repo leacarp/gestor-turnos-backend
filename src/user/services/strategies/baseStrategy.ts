@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { IUserStrategy } from './userStrategy';
 import { UserDtoService } from '../dto/user-dto.request/user-service.dto';
 import { UpdateUserDtoService } from '../dto/user-dto.request/update-user-service.dto';
@@ -8,13 +8,13 @@ export abstract class BaseStrategy implements IUserStrategy {
     
     protected validateName(nombre: string): void {
         if (!nombre || nombre.length < 3) {
-            throw new NotFoundException('Nombre debe tener al menos 3 caracteres');
+            throw new BadRequestException('Nombre debe tener al menos 3 caracteres');
         }
     }
 
     protected validateEmail(email: string): void {
         if (!email || !this.isValidEmail(email)) {
-            throw new NotFoundException('Email inválido');
+            throw new BadRequestException('Email inválido');
         }
     }
 
@@ -24,14 +24,15 @@ export abstract class BaseStrategy implements IUserStrategy {
     }
 
     protected validatePhone(phone: string): void {
-        if (!phone || phone.length < 11) {
-            throw new NotFoundException('El número debe tener cantidad correcta de dígitos');
+        const digits = phone.replace(/\D/g, '');
+        if (!digits || digits.length < 11) {
+            throw new BadRequestException('El número debe tener cantidad correcta de dígitos');
         }
     }
 
     protected validatePassword(password: string): void {
-        if (!password || password.length < 8) {
-            throw new NotFoundException('Password debe tener al menos 8 caracteres');
+        if (!password || password.length < 6) {
+            throw new BadRequestException('Password debe tener al menos 6 caracteres');
         }
     }
 
