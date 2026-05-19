@@ -23,6 +23,9 @@ export class Servicio {
   @Prop({ required: false, default: 0, min: 0, max: 100 })
   porcentajeSeña: number;
 
+  @Prop({required: true})
+  categoria : string;
+  
   createdAt?: Date;
   updatedAt?: Date;
 }

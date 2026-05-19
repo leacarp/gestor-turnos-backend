@@ -6,11 +6,13 @@ export class CreateServicioServiceDto {
   private readonly precio: number;
   private readonly requiereSeña: boolean;
   private readonly porcentajeSeña: number;
+  private readonly categoria: string;
 
-  constructor(nombre: string, duracion: number, precio: number, requiereSeña?: boolean, porcentajeSeña?: number) {
+  constructor(nombre: string, duracion: number, precio: number, categoria : string, requiereSeña?: boolean, porcentajeSeña?: number) {
     this.nombre = nombre;
     this.duracion = duracion;
     this.precio = precio;
+    this.categoria = categoria;
     this.requiereSeña = requiereSeña ?? false;
     this.porcentajeSeña = porcentajeSeña ?? 0;
   }
@@ -35,6 +37,10 @@ export class CreateServicioServiceDto {
     return this.porcentajeSeña;
   }
 
+  getCategoria() : string{
+    return this.categoria;
+  }
+
   toEntity(proveedorId: string): ServicioEntity {
     return new ServicioEntity(
       this.nombre,
@@ -43,6 +49,7 @@ export class CreateServicioServiceDto {
       proveedorId,
       this.requiereSeña,
       this.porcentajeSeña,
+      this.categoria
     );
   }
 }
