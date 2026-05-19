@@ -7,6 +7,8 @@ import { AvailabilityModule } from './availability/availability.module';
 import { AuthModule } from './auth/auth.module';
 import { ServiciosModule } from './servicios/servicios.module';
 import { TurnosModule } from './turnos/turnos.module';
+import { PagosModule } from './pagos/pagos.module';
+import { MercadoPagoModule } from './mercadopago/mercadopago.module';
 
 @Module({
   imports: [
@@ -28,6 +30,8 @@ import { TurnosModule } from './turnos/turnos.module';
     AuthModule,
     ServiciosModule,
     TurnosModule,
+    PagosModule,
+    MercadoPagoModule,
   ],
   controllers: [],
   providers: [],

@@ -1,6 +1,7 @@
 import { UserDtoService } from "../dto/user-dto.request/user-service.dto";
 import { UserEntity } from "src/user/domain/entities/user.entity";
 import { UpdateUserDtoService } from "../dto/user-dto.request/update-user-service.dto";
+import type { MpCredentialsData } from "../../domain/interfaces/IUserRepository";
 
 
 export interface IUserService{
@@ -10,4 +11,5 @@ export interface IUserService{
     findOneUser(userId: string) : Promise<UserEntity>;
     findAllUser() : Promise<UserEntity[]>;
     existsProvider(providerId: string) : Promise<boolean>;
+    updateMpCredentials(userId: string, data: MpCredentialsData): Promise<void>;
 }

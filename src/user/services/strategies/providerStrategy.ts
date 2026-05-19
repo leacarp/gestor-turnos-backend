@@ -51,8 +51,8 @@ export class ProviderStrategy extends BaseStrategy{
 
     private validateProviderDataContentCreate(providerData: ProviderDataDtoService): void {
         const publicInfo = providerData.getPublicInfo();
-        if (publicInfo && publicInfo.length < 20) {
-            throw new BadRequestException('Información pública insuficiente (mínimo 20 caracteres)');
+        if (publicInfo && publicInfo.length < 4) {
+            throw new BadRequestException('Información pública insuficiente (mínimo 4 caracteres)');
         }
     }
 
@@ -68,8 +68,8 @@ export class ProviderStrategy extends BaseStrategy{
     }
 
     private validatePublicInfoUpdate(publicInfo: string | undefined): void {
-        if (publicInfo && publicInfo.length < 20) {
-            throw new BadRequestException('Información pública insuficiente (mínimo 20 caracteres)');
+        if (publicInfo && publicInfo.length < 4) {
+            throw new BadRequestException('Información pública insuficiente (mínimo 4 caracteres)');
         }
     }
 }

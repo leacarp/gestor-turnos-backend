@@ -28,4 +28,13 @@ export class ServicioAdapter implements IServicioAdapter {
       return false;
     }
   }
+
+  async requiereSeña(servicioId: string): Promise<boolean> {
+    try {
+      const servicio = await this.servicioService.findById(servicioId);
+      return servicio.getRequiereSeña();
+    } catch {
+      return false;
+    }
+  }
 }

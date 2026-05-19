@@ -11,7 +11,7 @@ export interface IServicioRepository {
 
   update(
     id: string,
-    data: { nombre?: string; duracion?: number; precio?: number },
+    data: { nombre?: string; duracion?: number; precio?: number; requiereSeña?: boolean; porcentajeSeña?: number },
   ): Promise<ServicioEntity | null>;
 
   delete(id: string): Promise<void>;

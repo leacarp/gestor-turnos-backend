@@ -1,7 +1,7 @@
 import { Model } from 'mongoose';
 import { NotFoundException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { IUserRepository } from 'src/user/domain/interfaces/IUserRepository';
+import { IUserRepository, MpCredentialsData } from 'src/user/domain/interfaces/IUserRepository';
 import {User as UserSchema, UserDocument} from '../schemas/user.schema';
 import { UserEntity } from 'src/user/domain/entities/user.entity';
 import { ProviderDataEntity } from 'src/user/domain/entities/providerData.entity';
@@ -139,6 +139,24 @@ export class UserRepository implements IUserRepository{
         );
     }
 
+    async updateMpCredentials(userId: string, data: MpCredentialsData): Promise<void> {
+        const result = await this.userModel.findByIdAndUpdate(
+            userId,
+            {
+                'providerData.mpConnected': data.mpConnected,
+                'providerData.mpAccessToken': data.mpAccessToken,
+                'providerData.mpRefreshToken': data.mpRefreshToken,
+                'providerData.mpUserId': data.mpUserId,
+                'providerData.mpTokenExpiresAt': data.mpTokenExpiresAt,
+            },
+            { new: true },
+        );
+
+        if (!result) {
+            throw new NotFoundException('Usuario no encontrado');
+        }
+    }
+
     private mapProviderDataToEntity(providerData: any): ProviderDataEntity {
         return new ProviderDataEntity(
             providerData.address,
@@ -148,6 +166,11 @@ export class UserRepository implements IUserRepository{
             providerData.socialMedia?.map(
                 (social: any) => new SocialMediaLinkEntity(social.platform, social.url)
             ),
+            providerData.mpConnected ?? false,
+            providerData.mpAccessToken,
+            providerData.mpRefreshToken,
+            providerData.mpUserId,
+            providerData.mpTokenExpiresAt,
         );
     }
 

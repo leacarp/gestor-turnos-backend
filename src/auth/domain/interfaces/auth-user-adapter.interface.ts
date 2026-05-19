@@ -6,7 +6,7 @@ export interface AuthSocialMediaData {
 export interface AuthProviderData {
   publicInfo?: string;
   address: string;
-  minimumAdvance: number;
+  minimumAdvance?: number;
   serviceType: string;
   socialMedia?: AuthSocialMediaData[];
 }

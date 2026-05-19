@@ -4,6 +4,8 @@ export class ServicioEntity {
   private readonly _duracion: number;
   private readonly _precio: number;
   private readonly _proveedorId: string;
+  private readonly _requiereSeña: boolean;
+  private readonly _porcentajeSeña: number;
   private readonly _createdAt?: Date;
   private readonly _updatedAt?: Date;
 
@@ -12,6 +14,8 @@ export class ServicioEntity {
     duracion: number,
     precio: number,
     proveedorId: string,
+    requiereSeña: boolean = false,
+    porcentajeSeña: number = 0,
     createdAt?: Date,
     updatedAt?: Date,
     id?: string,
@@ -20,6 +24,8 @@ export class ServicioEntity {
     this._duracion = duracion;
     this._precio = precio;
     this._proveedorId = proveedorId;
+    this._requiereSeña = requiereSeña;
+    this._porcentajeSeña = porcentajeSeña;
     this._createdAt = createdAt;
     this._updatedAt = updatedAt;
     this._id = id;
@@ -43,6 +49,19 @@ export class ServicioEntity {
 
   getProveedorId(): string {
     return this._proveedorId;
+  }
+
+  getRequiereSeña(): boolean {
+    return this._requiereSeña;
+  }
+
+  getPorcentajeSeña(): number {
+    return this._porcentajeSeña;
+  }
+
+  calcularMontoSeña(): number {
+    if (!this._requiereSeña || this._porcentajeSeña === 0) return 0;
+    return Math.round((this._precio * this._porcentajeSeña) / 100);
   }
 
   getCreatedAt(): Date | undefined {
