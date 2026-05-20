@@ -30,6 +30,7 @@ export class ServicioService implements IServicioService {
     duracion: number,
     precio: number,
     proveedorId: string,
+    categoria: string,
     requiereSeña: boolean = false,
     porcentajeSeña: number = 0,
   ): Promise<ServicioEntity> {
@@ -39,7 +40,7 @@ export class ServicioService implements IServicioService {
       throw new BadRequestException('El porcentaje de seña debe ser entre 1 y 100');
     }
 
-    const entity = new ServicioEntity(nombre, duracion, precio, proveedorId, requiereSeña, porcentajeSeña);
+    const entity = new ServicioEntity(nombre, duracion, precio, proveedorId, requiereSeña, porcentajeSeña, categoria);
 
     return this.servicioRepository.create(entity);
   }
@@ -64,7 +65,7 @@ export class ServicioService implements IServicioService {
 
   async update(
     id: string,
-    data: { nombre?: string; duracion?: number; precio?: number; requiereSeña?: boolean; porcentajeSeña?: number },
+    data: { nombre?: string; duracion?: number; precio?: number; categoria?: string; requiereSeña?: boolean; porcentajeSeña?: number },
     proveedorId: string,
   ): Promise<ServicioEntity> {
     const servicio = await this.findById(id);

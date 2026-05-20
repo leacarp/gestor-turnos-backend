@@ -1,7 +1,7 @@
 import { ServicioEntity } from '../entities/servicio.entity.js';
 
 export interface IServicioService {
-  create(nombre: string, duracion: number, precio: number, proveedorId: string, requiereSeña?: boolean, porcentajeSeña?: number): Promise<ServicioEntity>;
+  create(nombre: string, duracion: number, precio: number, proveedorId: string, categoria : string, requiereSeña?: boolean, porcentajeSeña?: number): Promise<ServicioEntity>;
 
   findById(id: string): Promise<ServicioEntity>;
 
