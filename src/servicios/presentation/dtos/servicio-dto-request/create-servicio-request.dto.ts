@@ -15,6 +15,10 @@ export class CreateServicioRequestDto {
   @IsPositive()
   private readonly precio: number;
 
+  @IsString()
+  @IsNotEmpty()
+  private readonly categoria : string;
+
   @IsOptional()
   @IsBoolean()
   private readonly requiereSeña?: boolean;
@@ -25,12 +29,14 @@ export class CreateServicioRequestDto {
   @Max(100)
   private readonly porcentajeSeña?: number;
 
-  constructor(nombre: string, duracion: number, precio: number, requiereSeña?: boolean, porcentajeSeña?: number) {
+
+  constructor(nombre: string, duracion: number, precio: number, categoria: string, requiereSeña?: boolean, porcentajeSeña?: number) {
     this.nombre = nombre;
     this.duracion = duracion;
     this.precio = precio;
     this.requiereSeña = requiereSeña;
     this.porcentajeSeña = porcentajeSeña;
+    this.categoria = categoria;
   }
 
   getNombre(): string {
@@ -53,11 +59,16 @@ export class CreateServicioRequestDto {
     return this.porcentajeSeña;
   }
 
+  getCategoria() : string {
+    return this.categoria;
+  }
+
   toServiceDto(): CreateServicioServiceDto {
     return new CreateServicioServiceDto(
       this.nombre,
       this.duracion,
       this.precio,
+      this.categoria,
       this.requiereSeña,
       this.porcentajeSeña,
     );

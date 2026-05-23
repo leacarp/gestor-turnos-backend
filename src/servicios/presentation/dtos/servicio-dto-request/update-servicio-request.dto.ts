@@ -17,6 +17,10 @@ export class UpdateServicioRequestDto {
   @IsPositive()
   private readonly precio?: number;
 
+  @IsString()
+  @IsOptional()
+  private readonly categoria? : string;
+
   @IsOptional()
   @IsBoolean()
   private readonly requiereSeña?: boolean;
@@ -27,12 +31,13 @@ export class UpdateServicioRequestDto {
   @Max(100)
   private readonly porcentajeSeña?: number;
 
-  constructor(nombre?: string, duracion?: number, precio?: number, requiereSeña?: boolean, porcentajeSeña?: number) {
+  constructor(nombre?: string, duracion?: number, precio?: number, requiereSeña?: boolean, porcentajeSeña?: number, categoria? : string) {
     this.nombre = nombre;
     this.duracion = duracion;
     this.precio = precio;
     this.requiereSeña = requiereSeña;
     this.porcentajeSeña = porcentajeSeña;
+    this.categoria = categoria;
   }
 
   getNombre(): string | undefined {
@@ -55,6 +60,10 @@ export class UpdateServicioRequestDto {
     return this.porcentajeSeña;
   }
 
+  getCategoria() : string | undefined{
+    return this.categoria;
+  }
+
   toServiceDto(): UpdateServicioServiceDto {
     return new UpdateServicioServiceDto(
       this.nombre,
@@ -62,6 +71,7 @@ export class UpdateServicioRequestDto {
       this.precio,
       this.requiereSeña,
       this.porcentajeSeña,
+      this.categoria,
     );
   }
 }
