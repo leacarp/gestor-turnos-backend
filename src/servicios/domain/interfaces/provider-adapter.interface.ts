@@ -2,6 +2,7 @@ export interface ProviderData {
   id: string;
   name: string;
   role: string;
+  minimumAdvance?: number;
 }
 
 export interface IProviderAdapter {

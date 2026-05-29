@@ -33,16 +33,15 @@ export class ServicioService implements IServicioService {
     categoria: string,
     description: string,
     requiereSeña: boolean = false,
-    porcentajeSeña: number = 0,
+    _porcentajeSeña: number = 0,
   ): Promise<ServicioEntity> {
-    await this.validateProvider(proveedorId);
+    const provider = await this.validateProvider(proveedorId);
     this.validateCreateFields(nombre, description, duracion, precio, categoria);
 
-    if (requiereSeña && (porcentajeSeña <= 0 || porcentajeSeña > 100)) {
-      throw new BadRequestException('El porcentaje de seña debe ser entre 1 y 100');
-    }
+    const montoSeña = this.resolveProviderDeposit(provider.minimumAdvance, precio);
+    const shouldRequireDeposit = montoSeña > 0;
 
-    const entity = new ServicioEntity(nombre, duracion, precio, proveedorId, requiereSeña, porcentajeSeña, categoria, description);
+    const entity = new ServicioEntity(nombre, duracion, precio, proveedorId, shouldRequireDeposit, montoSeña, categoria, description);
 
     return this.servicioRepository.create(entity);
   }
@@ -75,8 +74,17 @@ export class ServicioService implements IServicioService {
     this.validateOwnership(servicio, proveedorId);
     this.validateUpdateFields(data);
 
-    if (data.requiereSeña && data.porcentajeSeña !== undefined && (data.porcentajeSeña <= 0 || data.porcentajeSeña > 100)) {
-      throw new BadRequestException('El porcentaje de seña debe ser entre 1 y 100');
+    const requiereSeña = servicio.getRequiereSeña();
+    const montoSeña = servicio.getMontoSeña();
+    const precio = data.precio !== undefined ? data.precio : servicio.getPrecio();
+
+    if (requiereSeña) {
+      if (montoSeña <= 0) {
+        throw new BadRequestException('La seña debe ser mayor a 0');
+      }
+      if (montoSeña > precio) {
+        throw new BadRequestException('La seña no puede ser mayor al precio del servicio');
+      }
     }
 
     const updated = await this.servicioRepository.update(id, data);
@@ -96,12 +104,27 @@ export class ServicioService implements IServicioService {
     await this.servicioRepository.delete(id);
   }
 
-  private async validateProvider(proveedorId: string): Promise<void> {
-    const isProvider = await this.providerAdapter.isProvider(proveedorId);
+  private async validateProvider(proveedorId: string) {
+    const provider = await this.providerAdapter.findById(proveedorId);
 
-    if (!isProvider) {
+    if (!provider || provider.role !== 'provider') {
       throw new ForbiddenException('Solo los proveedores pueden crear servicios');
     }
+
+    return provider;
+  }
+
+  private resolveProviderDeposit(minimumAdvance: number | undefined, precio: number): number {
+    const montoSeña = Number(minimumAdvance ?? 0);
+
+    if (!Number.isFinite(montoSeña) || montoSeña <= 0) {
+      return 0;
+    }
+    if (montoSeña > precio) {
+      throw new BadRequestException('La seña no puede ser mayor al precio del servicio');
+    }
+
+    return montoSeña;
   }
 
   private validateOwnership(

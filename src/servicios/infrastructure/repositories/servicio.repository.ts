@@ -20,7 +20,7 @@ export class ServicioRepository implements IServicioRepository {
       precio: entity.getPrecio(),
       proveedorId: new Types.ObjectId(entity.getProveedorId()),
       requiereSeña: entity.getRequiereSeña(),
-      porcentajeSeña: entity.getPorcentajeSeña(),
+      montoSeña: entity.getMontoSeña(),
       categoria: entity.getCategoria(),
       description: entity.getDescription(),
     });
@@ -63,8 +63,6 @@ export class ServicioRepository implements IServicioRepository {
     if (data.nombre !== undefined) updateData.nombre = data.nombre;
     if (data.duracion !== undefined) updateData.duracion = data.duracion;
     if (data.precio !== undefined) updateData.precio = data.precio;
-    if (data.requiereSeña !== undefined) updateData.requiereSeña = data.requiereSeña;
-    if (data.porcentajeSeña !== undefined) updateData.porcentajeSeña = data.porcentajeSeña;
     if (data.categoria !== undefined) updateData.categoria = data.categoria;
     if (data.description !== undefined) updateData.description = data.description;
 
@@ -90,13 +88,15 @@ export class ServicioRepository implements IServicioRepository {
   }
 
   private toEntity(doc: ServicioDocument): ServicioEntity {
+    const legacyDoc = doc as ServicioDocument & { porcentajeSeña?: number };
+
     return new ServicioEntity(
       doc.nombre,
       doc.duracion,
       doc.precio,
       doc.proveedorId.toString(),
       doc.requiereSeña ?? false,
-      doc.porcentajeSeña ?? 0,
+      doc.montoSeña ?? legacyDoc.porcentajeSeña ?? 0,
       doc.categoria,
       doc.description ?? '',
       doc.createdAt,

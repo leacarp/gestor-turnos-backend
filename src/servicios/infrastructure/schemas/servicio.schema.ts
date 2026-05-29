@@ -20,8 +20,8 @@ export class Servicio {
   @Prop({ required: false, default: false })
   requiereSeña: boolean;
 
-  @Prop({ required: false, default: 0, min: 0, max: 100 })
-  porcentajeSeña: number;
+  @Prop({ required: false, default: 0, min: 0 })
+  montoSeña: number;
 
   @Prop({required: true})
   categoria : string;

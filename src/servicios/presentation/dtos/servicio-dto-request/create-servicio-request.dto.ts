@@ -6,7 +6,6 @@ import {
   Min,
   IsBoolean,
   IsOptional,
-  Max,
 } from 'class-validator';
 import { CreateServicioServiceDto } from '../../../services/dto/create-servicio-service.dto.js';
 
@@ -38,8 +37,6 @@ export class CreateServicioRequestDto {
 
   @IsOptional()
   @IsNumber()
-  @Min(1)
-  @Max(100)
   porcentajeSeña?: number;
 
   getNombre(): string {

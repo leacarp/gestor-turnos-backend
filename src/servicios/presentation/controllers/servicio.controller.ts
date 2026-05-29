@@ -31,7 +31,7 @@ export class ServicioController {
   constructor(
     @Inject(SERVICIO_SERVICE)
     private readonly servicioService: IServicioService,
-  ) {}
+  ) { }
 
   @Post()
   async create(

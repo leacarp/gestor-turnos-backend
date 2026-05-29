@@ -36,7 +36,7 @@ export class MercadoPagoService {
     private readonly turnoService: ITurnoService,
     @Inject(USER_SERVICE)
     private readonly userService: IUserService,
-  ) {}
+  ) { }
 
   async createPreference(
     proveedorId: string,
@@ -71,7 +71,7 @@ export class MercadoPagoService {
       hora_inicio: horaInicio,
       notas,
       monto_total: servicio.getPrecio(),
-      porcentaje_sena: servicio.getPorcentajeSeña(),
+      porcentaje_sena: 0,
     };
 
     const backUrls = this.getFrontendBackUrls();
@@ -87,7 +87,7 @@ export class MercadoPagoService {
           quantity: 1,
           unit_price: montoSeña,
           currency_id: 'ARS',
-          description: `Seña del ${servicio.getPorcentajeSeña()}% para reservar el turno`,
+          description: `Seña fija de $${montoSeña} para reservar el turno`,
         },
       ],
       back_urls: backUrls,

@@ -5,7 +5,6 @@ import {
   IsPositive,
   Min,
   IsBoolean,
-  Max,
   IsNotEmpty,
 } from 'class-validator';
 import { UpdateServicioServiceDto } from '../../../services/dto/update-servicio-service.dto.js';
@@ -43,8 +42,6 @@ export class UpdateServicioRequestDto {
 
   @IsOptional()
   @IsNumber()
-  @Min(1)
-  @Max(100)
   porcentajeSeña?: number;
 
   getNombre(): string | undefined {

@@ -30,7 +30,7 @@ export class ServicioResponseDto {
   readonly createdAt: Date;
 
   @Expose()
-  readonly categoria : string;
+  readonly categoria: string;
 
   @Expose()
   readonly description: string;
@@ -69,7 +69,7 @@ export class ServicioResponseDto {
       entity.getPrecio(),
       entity.getProveedorId(),
       entity.getRequiereSeña(),
-      entity.getPorcentajeSeña(),
+      0,
       entity.getCategoria(),
       entity.calcularMontoSeña(),
       entity.getCreatedAt()!,
