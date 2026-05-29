@@ -45,6 +45,7 @@ export class ServicioController {
       serviceDto.getPrecio(),
       user.id,
       serviceDto.getCategoria(),
+      serviceDto.getDescription(),
       serviceDto.getRequiereSeña(),
       serviceDto.getPorcentajeSeña(),
     );

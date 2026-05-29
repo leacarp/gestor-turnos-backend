@@ -32,6 +32,9 @@ export class ServicioResponseDto {
   @Expose()
   readonly categoria : string;
 
+  @Expose()
+  readonly description: string;
+
   constructor(
     id: string,
     nombre: string,
@@ -43,6 +46,7 @@ export class ServicioResponseDto {
     categoria: string,
     montoSeña: number,
     createdAt: Date,
+    description: string,
   ) {
     this.id = id;
     this.nombre = nombre;
@@ -54,6 +58,7 @@ export class ServicioResponseDto {
     this.montoSeña = montoSeña;
     this.createdAt = createdAt;
     this.categoria = categoria;
+    this.description = description;
   }
 
   static fromEntity(entity: ServicioEntity): ServicioResponseDto {
@@ -68,6 +73,7 @@ export class ServicioResponseDto {
       entity.getCategoria(),
       entity.calcularMontoSeña(),
       entity.getCreatedAt()!,
+      entity.getDescription(),
     );
   }
 }

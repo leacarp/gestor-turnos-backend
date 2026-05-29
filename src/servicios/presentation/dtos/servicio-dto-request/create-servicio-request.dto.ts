@@ -1,43 +1,46 @@
-import { IsString, IsNotEmpty, IsNumber, IsPositive, Min, IsBoolean, IsOptional, Max } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  IsPositive,
+  Min,
+  IsBoolean,
+  IsOptional,
+  Max,
+} from 'class-validator';
 import { CreateServicioServiceDto } from '../../../services/dto/create-servicio-service.dto.js';
 
 export class CreateServicioRequestDto {
   @IsString()
-  @IsNotEmpty()
-  private readonly nombre: string;
-
-  @IsNumber()
-  @IsPositive()
-  @Min(1)
-  private readonly duracion: number;
-
-  @IsNumber()
-  @IsPositive()
-  private readonly precio: number;
+  @IsNotEmpty({ message: 'El nombre es obligatorio' })
+  nombre: string;
 
   @IsString()
-  @IsNotEmpty()
-  private readonly categoria : string;
+  @IsNotEmpty({ message: 'La descripción es obligatoria' })
+  description: string;
+
+  @IsNumber()
+  @IsPositive({ message: 'La duración debe ser mayor a 0' })
+  @Min(1, { message: 'La duración mínima es 1 minuto' })
+  duracion: number;
+
+  @IsNumber()
+  @IsPositive({ message: 'El precio debe ser mayor a 0' })
+  precio: number;
+
+  @IsString()
+  @IsNotEmpty({ message: 'La categoría es obligatoria' })
+  categoria: string;
 
   @IsOptional()
   @IsBoolean()
-  private readonly requiereSeña?: boolean;
+  requiereSeña?: boolean;
 
   @IsOptional()
   @IsNumber()
   @Min(1)
   @Max(100)
-  private readonly porcentajeSeña?: number;
-
-
-  constructor(nombre: string, duracion: number, precio: number, categoria: string, requiereSeña?: boolean, porcentajeSeña?: number) {
-    this.nombre = nombre;
-    this.duracion = duracion;
-    this.precio = precio;
-    this.requiereSeña = requiereSeña;
-    this.porcentajeSeña = porcentajeSeña;
-    this.categoria = categoria;
-  }
+  porcentajeSeña?: number;
 
   getNombre(): string {
     return this.nombre;
@@ -59,8 +62,12 @@ export class CreateServicioRequestDto {
     return this.porcentajeSeña;
   }
 
-  getCategoria() : string {
+  getCategoria(): string {
     return this.categoria;
+  }
+
+  getDescription(): string {
+    return this.description;
   }
 
   toServiceDto(): CreateServicioServiceDto {
@@ -69,6 +76,7 @@ export class CreateServicioRequestDto {
       this.duracion,
       this.precio,
       this.categoria,
+      this.description,
       this.requiereSeña,
       this.porcentajeSeña,
     );

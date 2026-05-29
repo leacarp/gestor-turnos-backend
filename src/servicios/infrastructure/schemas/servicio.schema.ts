@@ -25,6 +25,9 @@ export class Servicio {
 
   @Prop({required: true})
   categoria : string;
+
+  @Prop({ required: false, default: '' })
+  description: string;
   
   createdAt?: Date;
   updatedAt?: Date;

@@ -9,6 +9,7 @@ export class ServicioEntity {
   private readonly _createdAt?: Date;
   private readonly _updatedAt?: Date;
   private readonly _categoria: string;
+  private readonly _description: string;
 
   constructor(
     nombre: string,
@@ -18,6 +19,7 @@ export class ServicioEntity {
     requiereSeña: boolean = false,
     porcentajeSeña: number = 0,
     categoria: string,
+    description: string = '',
     createdAt?: Date,
     updatedAt?: Date,
     id?: string,
@@ -32,6 +34,7 @@ export class ServicioEntity {
     this._updatedAt = updatedAt;
     this._id = id;
     this._categoria = categoria;
+    this._description = description;
   }
 
   getId(): string | undefined {
@@ -77,5 +80,9 @@ export class ServicioEntity {
 
   getCategoria() : string {
     return this._categoria;
+  }
+
+  getDescription(): string {
+    return this._description;
   }
 }
