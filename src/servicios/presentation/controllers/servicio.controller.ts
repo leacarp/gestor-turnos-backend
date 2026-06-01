@@ -31,7 +31,7 @@ export class ServicioController {
   constructor(
     @Inject(SERVICIO_SERVICE)
     private readonly servicioService: IServicioService,
-  ) {}
+  ) { }
 
   @Post()
   async create(
@@ -45,6 +45,7 @@ export class ServicioController {
       serviceDto.getPrecio(),
       user.id,
       serviceDto.getCategoria(),
+      serviceDto.getDescription(),
       serviceDto.getRequiereSeña(),
       serviceDto.getPorcentajeSeña(),
     );

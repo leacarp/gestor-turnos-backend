@@ -9,7 +9,7 @@ export class ProviderAdapter implements IProviderAdapter {
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
-  ) {}
+  ) { }
 
   async findById(id: string): Promise<ProviderData | null> {
     const user = await this.userRepository.findById(id);
@@ -22,6 +22,7 @@ export class ProviderAdapter implements IProviderAdapter {
       id: user.getId()!,
       name: user.getName(),
       role: user.getRole(),
+      minimumAdvance: user.getProviderData()?.getMinimumAdvance(),
     };
   }
 

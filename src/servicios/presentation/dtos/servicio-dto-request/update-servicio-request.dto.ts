@@ -1,44 +1,48 @@
-import { IsString, IsOptional, IsNumber, IsPositive, Min, IsBoolean, Max } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsPositive,
+  Min,
+  IsBoolean,
+  IsNotEmpty,
+} from 'class-validator';
 import { UpdateServicioServiceDto } from '../../../services/dto/update-servicio-service.dto.js';
 
 export class UpdateServicioRequestDto {
   @IsOptional()
   @IsString()
-  private readonly nombre?: string;
+  @IsNotEmpty({ message: 'El nombre no puede estar vacío' })
+  nombre?: string;
 
   @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  @Min(1)
-  private readonly duracion?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @IsPositive()
-  private readonly precio?: number;
-
   @IsString()
+  @IsNotEmpty({ message: 'La descripción no puede estar vacía' })
+  description?: string;
+
   @IsOptional()
-  private readonly categoria? : string;
+  @IsNumber()
+  @IsPositive({ message: 'La duración debe ser mayor a 0' })
+  @Min(1, { message: 'La duración mínima es 1 minuto' })
+  duracion?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @IsPositive({ message: 'El precio debe ser mayor a 0' })
+  precio?: number;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty({ message: 'La categoría no puede estar vacía' })
+  categoria?: string;
 
   @IsOptional()
   @IsBoolean()
-  private readonly requiereSeña?: boolean;
+  requiereSeña?: boolean;
 
   @IsOptional()
   @IsNumber()
-  @Min(1)
-  @Max(100)
-  private readonly porcentajeSeña?: number;
-
-  constructor(nombre?: string, duracion?: number, precio?: number, requiereSeña?: boolean, porcentajeSeña?: number, categoria? : string) {
-    this.nombre = nombre;
-    this.duracion = duracion;
-    this.precio = precio;
-    this.requiereSeña = requiereSeña;
-    this.porcentajeSeña = porcentajeSeña;
-    this.categoria = categoria;
-  }
+  porcentajeSeña?: number;
 
   getNombre(): string | undefined {
     return this.nombre;
@@ -60,8 +64,12 @@ export class UpdateServicioRequestDto {
     return this.porcentajeSeña;
   }
 
-  getCategoria() : string | undefined{
+  getCategoria(): string | undefined {
     return this.categoria;
+  }
+
+  getDescription(): string | undefined {
+    return this.description;
   }
 
   toServiceDto(): UpdateServicioServiceDto {
@@ -72,6 +80,7 @@ export class UpdateServicioRequestDto {
       this.requiereSeña,
       this.porcentajeSeña,
       this.categoria,
+      this.description,
     );
   }
 }

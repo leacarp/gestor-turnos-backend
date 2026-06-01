@@ -20,8 +20,9 @@ export class ServicioRepository implements IServicioRepository {
       precio: entity.getPrecio(),
       proveedorId: new Types.ObjectId(entity.getProveedorId()),
       requiereSeña: entity.getRequiereSeña(),
-      porcentajeSeña: entity.getPorcentajeSeña(),
+      montoSeña: entity.getMontoSeña(),
       categoria: entity.getCategoria(),
+      description: entity.getDescription(),
     });
 
     const saved = await servicio.save();
@@ -55,16 +56,15 @@ export class ServicioRepository implements IServicioRepository {
 
   async update(
     id: string,
-    data: { nombre?: string; duracion?: number; precio?: number; requiereSeña?: boolean; porcentajeSeña?: number; categoria? : string },
+    data: { nombre?: string; duracion?: number; precio?: number; requiereSeña?: boolean; porcentajeSeña?: number; categoria?: string; description?: string },
   ): Promise<ServicioEntity | null> {
     const updateData: Record<string, unknown> = {};
 
     if (data.nombre !== undefined) updateData.nombre = data.nombre;
     if (data.duracion !== undefined) updateData.duracion = data.duracion;
     if (data.precio !== undefined) updateData.precio = data.precio;
-    if (data.requiereSeña !== undefined) updateData.requiereSeña = data.requiereSeña;
-    if (data.porcentajeSeña !== undefined) updateData.porcentajeSeña = data.porcentajeSeña;
     if (data.categoria !== undefined) updateData.categoria = data.categoria;
+    if (data.description !== undefined) updateData.description = data.description;
 
     const updated = await this.servicioModel.findByIdAndUpdate(
       id,
@@ -88,14 +88,17 @@ export class ServicioRepository implements IServicioRepository {
   }
 
   private toEntity(doc: ServicioDocument): ServicioEntity {
+    const legacyDoc = doc as ServicioDocument & { porcentajeSeña?: number };
+
     return new ServicioEntity(
       doc.nombre,
       doc.duracion,
       doc.precio,
       doc.proveedorId.toString(),
       doc.requiereSeña ?? false,
-      doc.porcentajeSeña ?? 0,
+      doc.montoSeña ?? legacyDoc.porcentajeSeña ?? 0,
       doc.categoria,
+      doc.description ?? '',
       doc.createdAt,
       doc.updatedAt,
       doc._id.toString(),

@@ -5,10 +5,11 @@ export class ServicioEntity {
   private readonly _precio: number;
   private readonly _proveedorId: string;
   private readonly _requiereSeña: boolean;
-  private readonly _porcentajeSeña: number;
+  private readonly _montoSeña: number;
   private readonly _createdAt?: Date;
   private readonly _updatedAt?: Date;
   private readonly _categoria: string;
+  private readonly _description: string;
 
   constructor(
     nombre: string,
@@ -16,8 +17,9 @@ export class ServicioEntity {
     precio: number,
     proveedorId: string,
     requiereSeña: boolean = false,
-    porcentajeSeña: number = 0,
+    montoSeña: number = 0,
     categoria: string,
+    description: string = '',
     createdAt?: Date,
     updatedAt?: Date,
     id?: string,
@@ -27,11 +29,12 @@ export class ServicioEntity {
     this._precio = precio;
     this._proveedorId = proveedorId;
     this._requiereSeña = requiereSeña;
-    this._porcentajeSeña = porcentajeSeña;
+    this._montoSeña = montoSeña;
     this._createdAt = createdAt;
     this._updatedAt = updatedAt;
     this._id = id;
     this._categoria = categoria;
+    this._description = description;
   }
 
   getId(): string | undefined {
@@ -58,13 +61,13 @@ export class ServicioEntity {
     return this._requiereSeña;
   }
 
-  getPorcentajeSeña(): number {
-    return this._porcentajeSeña;
+  getMontoSeña(): number {
+    return this._montoSeña;
   }
 
   calcularMontoSeña(): number {
-    if (!this._requiereSeña || this._porcentajeSeña === 0) return 0;
-    return Math.round((this._precio * this._porcentajeSeña) / 100);
+    if (!this._requiereSeña) return 0;
+    return this._montoSeña;
   }
 
   getCreatedAt(): Date | undefined {
@@ -77,5 +80,9 @@ export class ServicioEntity {
 
   getCategoria() : string {
     return this._categoria;
+  }
+
+  getDescription(): string {
+    return this._description;
   }
 }
