@@ -8,8 +8,10 @@ import { AvailabilityService } from './services/availability.service';
 import { AvailabilityController } from './presentation/controllers/availability.controller';
 import { UserModule } from 'src/user/user.module';
 import { TurnosModule } from 'src/turnos/turnos.module';
+import { ServiciosModule } from 'src/servicios/servicios.module';
 import { UserAdapter } from './infrastructure/adapters/user.adapter';
-import { AVAILABILITY_SERVICE, AVAILABILITY_REPOSITORY, APPOINTMENT_PORT, USER_PORT } from './infrastructure/constants/injection-tokens';
+import { ServiceAdapter } from './infrastructure/adapters/service.adapter';
+import { AVAILABILITY_SERVICE, AVAILABILITY_REPOSITORY, APPOINTMENT_PORT, USER_PORT, SERVICE_PORT } from './infrastructure/constants/injection-tokens';
 
 @Module({
   imports: [
@@ -19,6 +21,7 @@ import { AVAILABILITY_SERVICE, AVAILABILITY_REPOSITORY, APPOINTMENT_PORT, USER_P
     ]),
     UserModule,
     TurnosModule,
+    ServiciosModule,
   ],
   controllers: [AvailabilityController],
   providers: [
@@ -37,6 +40,10 @@ import { AVAILABILITY_SERVICE, AVAILABILITY_REPOSITORY, APPOINTMENT_PORT, USER_P
     {
       provide: USER_PORT,
       useClass: UserAdapter
+    },
+    {
+      provide: SERVICE_PORT,
+      useClass: ServiceAdapter,
     }
   ],
   exports: [

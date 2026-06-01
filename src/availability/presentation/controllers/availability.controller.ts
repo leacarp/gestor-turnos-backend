@@ -104,7 +104,7 @@ export class AvailabilityController {
   @Roles('client', 'provider', 'admin')
   async getAvailableSlots(@Param('providerId') providerId: string, @Query() query: GetSlotsRequestDto): Promise<AvailableSlotResponseDto[]> {
     const date = new Date(query.date + 'T00:00:00');
-    const serviceDto = new GetSlotsDtoService(providerId, date);
+    const serviceDto = new GetSlotsDtoService(providerId, date, query.servicioId);
     return this.availabilityService.getAvailableSlots(serviceDto);
   }
     
