@@ -103,6 +103,10 @@ export class TurnoService implements ITurnoService {
     return this.turnoRepository.findByProveedor(proveedorId);
   }
 
+  async findByProveedorAndDate(proveedorId: string, fecha: Date): Promise<TurnoEntity[]> {
+    return this.turnoRepository.findByProveedorAndDate(proveedorId, fecha);
+  }
+
   async findByCliente(clienteId: string): Promise<TurnoEntity[]> {
     return this.turnoRepository.findByCliente(clienteId);
   }

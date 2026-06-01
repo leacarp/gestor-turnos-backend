@@ -16,6 +16,8 @@ export interface ITurnoService {
 
   findByProveedor(proveedorId: string): Promise<TurnoEntity[]>;
 
+  findByProveedorAndDate(proveedorId: string, fecha: Date): Promise<TurnoEntity[]>;
+
   findByCliente(clienteId: string): Promise<TurnoEntity[]>;
 
   update(

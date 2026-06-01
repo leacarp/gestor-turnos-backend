@@ -199,7 +199,20 @@ export class AvailabilityService implements IAvailabilityService{
   }
 
   private timeToMinutes(time: string): number {
-    const [hours, minutes] = time.split(':').map(Number);
+    const normalized = time.trim().toUpperCase();
+    const match = normalized.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/);
+
+    if (!match) {
+      return Number.NaN;
+    }
+
+    let hours = Number(match[1]);
+    const minutes = Number(match[2] ?? 0);
+    const meridiem = match[3];
+
+    if (meridiem === 'PM' && hours < 12) hours += 12;
+    if (meridiem === 'AM' && hours === 12) hours = 0;
+
     return hours * 60 + minutes;
   }
 

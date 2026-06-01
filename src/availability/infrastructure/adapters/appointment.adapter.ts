@@ -16,20 +16,7 @@ export class AppointmentAdapter implements IAppointmentPort {
   ) {}
 
   async getBookedSlots(providerId: string, date: Date): Promise<{ startTime: string; endTime: string }[]> {
-    const turnos = await this.turnoService.findByProveedor(providerId);
-
-    const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
-
-    const bookedTurnos = turnos
-      .filter(t => {
-        const turnoDate = new Date(t.getFecha());
-        const estado = t.getEstado();
-        return turnoDate >= startOfDay && turnoDate <= endOfDay
-          && (estado === 'pendiente' || estado === 'confirmado');
-      });
+    const bookedTurnos = await this.turnoService.findByProveedorAndDate(providerId, date);
 
     return Promise.all(
       bookedTurnos.map(async t => {
@@ -37,7 +24,7 @@ export class AppointmentAdapter implements IAppointmentPort {
         const startMinutes = this.timeToMinutes(t.getHoraInicio());
 
         return {
-          startTime: t.getHoraInicio(),
+          startTime: this.minutesToTime(startMinutes),
           endTime: this.minutesToTime(startMinutes + service.getDuracion()),
         };
       }),
@@ -45,7 +32,20 @@ export class AppointmentAdapter implements IAppointmentPort {
   }
 
   private timeToMinutes(time: string): number {
-    const [hours, minutes] = time.split(':').map(Number);
+    const normalized = time.trim().toUpperCase();
+    const match = normalized.match(/^(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?$/);
+
+    if (!match) {
+      return Number.NaN;
+    }
+
+    let hours = Number(match[1]);
+    const minutes = Number(match[2] ?? 0);
+    const meridiem = match[3];
+
+    if (meridiem === 'PM' && hours < 12) hours += 12;
+    if (meridiem === 'AM' && hours === 12) hours = 0;
+
     return hours * 60 + minutes;
   }
 
