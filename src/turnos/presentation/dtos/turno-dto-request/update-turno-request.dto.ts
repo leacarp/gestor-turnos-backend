@@ -43,10 +43,14 @@ export class UpdateTurnoRequestDto {
 
   toServiceDto(): UpdateTurnoServiceDto {
     return new UpdateTurnoServiceDto(
-      this.fecha ? new Date(this.fecha) : undefined,
+      this.fecha ? this.parseLocalDate(this.fecha) : undefined,
       this.horaInicio,
       this.estado,
       this.notas,
     );
+  }
+
+  private parseLocalDate(date: string): Date {
+    return new Date(date + 'T00:00:00');
   }
 }
