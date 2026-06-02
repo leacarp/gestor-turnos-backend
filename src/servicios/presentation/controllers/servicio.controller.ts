@@ -7,7 +7,7 @@ import {
   Body,
   Param,
   Inject,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common';
 
 import type { IServicioService } from '../../domain/interfaces/servicio-service.interface.js';
@@ -22,6 +22,7 @@ import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard
 import { RolesGuard } from '../../../auth/infrastructure/guards/roles.guard.js';
 import { Roles } from '../../../auth/presentation/decorators/roles.decorator.js';
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator.js';
+import { Public } from '../../../auth/presentation/decorators/public.decorator.js';
 
 @Controller('servicios')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -58,6 +59,7 @@ export class ServicioController {
     return entities.map(ServicioResponseDto.fromEntity);
   }
 
+  @Public()
   @Get('proveedor/:proveedorId')
   async findByProveedor(
     @Param('proveedorId', ParseMongoIdPipe) proveedorId: string,
