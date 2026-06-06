@@ -18,6 +18,7 @@ import { JwtAuthGuard } from 'src/auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/infrastructure/guards/roles.guard';
 import { Roles } from 'src/auth/presentation/decorators/roles.decorator';
 import { AVAILABILITY_SERVICE } from 'src/availability/infrastructure/constants/injection-tokens';
+import { Public } from '../../../auth/presentation/decorators/public.decorator.js';
 
 
 @Controller('availability')
@@ -99,7 +100,7 @@ export class AvailabilityController {
   }
     
     // --- Available Slots ---
-    
+  @Public()  
   @Get('slots/:providerId')
   @Roles('client', 'provider', 'admin')
   async getAvailableSlots(@Param('providerId') providerId: string, @Query() query: GetSlotsRequestDto): Promise<AvailableSlotResponseDto[]> {
