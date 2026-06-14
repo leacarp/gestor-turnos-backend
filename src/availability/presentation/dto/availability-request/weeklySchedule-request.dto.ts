@@ -1,4 +1,4 @@
-import { IsArray, IsBoolean, IsInt, IsString, Max, Min, ValidateNested, IsNotEmpty } from 'class-validator';
+import { IsArray, IsBoolean, IsInt, IsOptional, IsString, Max, Min, ValidateNested, IsNotEmpty } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class DaySlotRequestDto {
@@ -25,4 +25,9 @@ export class WeeklyScheduleRequestDto {
   @ValidateNested({ each: true })
   @Type(() => DaySlotRequestDto)
   slots: DaySlotRequestDto[];
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  appointmentGap?: number;
 }

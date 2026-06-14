@@ -11,13 +11,15 @@ export class WeeklyScheduleEntity {
   private _id? : string;
   private _providerId: string;
   private _slots: DaySlot[];
+  private _appointmentGap: number;
   private _createdAt?: Date;
   private _updatedAt?: Date;
 
-  constructor(providerId: string, slots: DaySlot[], id?: string, createdAt?: Date, updatedAt?: Date){
+  constructor(providerId: string, slots: DaySlot[], id?: string, createdAt?: Date, updatedAt?: Date, appointmentGap: number = 0){
     this._id = id;
     this._providerId = providerId;
     this._slots = slots;
+    this._appointmentGap = appointmentGap;
     this._createdAt = createdAt;
     this._updatedAt = updatedAt;
   }
@@ -32,6 +34,10 @@ export class WeeklyScheduleEntity {
 
   getSlots() : DaySlot[]{
     return this._slots;
+  }
+
+  getAppointmentGap() : number {
+    return this._appointmentGap;
   }
 
   getCreatedAt() : Date | undefined{

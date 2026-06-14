@@ -20,6 +20,7 @@ export class AvailabilityRepository implements IAvailabilityRepository {
     const doc = await this.weeklyModel.create({
       providerId: data.getProviderId(),
       slots: data.getSlots(),
+      appointmentGap: data.getAppointmentGap(),
     });
     return this.toWeeklyEntity(doc);
   }
@@ -32,7 +33,7 @@ export class AvailabilityRepository implements IAvailabilityRepository {
   async updateSchedule(providerId: string, data: WeeklyScheduleEntity): Promise<WeeklyScheduleEntity | null> {
     const doc = await this.weeklyModel.findOneAndUpdate(
       { providerId },
-      { $set: { slots: data.getSlots() } },
+      { $set: { slots: data.getSlots(), appointmentGap: data.getAppointmentGap() } },
       { new: true },
     ).exec();
     return doc ? this.toWeeklyEntity(doc) : null;
@@ -91,6 +92,7 @@ export class AvailabilityRepository implements IAvailabilityRepository {
       doc._id.toString(),
       doc.createdAt,
       doc.updatedAt,
+      doc.appointmentGap ?? 0,
     );
   }
   

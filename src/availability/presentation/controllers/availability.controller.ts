@@ -33,22 +33,22 @@ export class AvailabilityController {
   @Post('schedule')
   @Roles('provider')
   async createSchedule(@CurrentUser() user : AuthUserDto, @Body() dto: WeeklyScheduleRequestDto): Promise<WeeklyScheduleResponseDto> {
-    const serviceDto = new WeeklyScheduleDtoService(user.id, dto.slots);
+    const serviceDto = new WeeklyScheduleDtoService(user.id, dto.slots, dto.appointmentGap ?? 0);
     const entity = await this.availabilityService.createSchedule(serviceDto);
     return this.toWeeklyScheduleResponse(entity);
   }
-    
+
   @Get('schedule')
   @Roles('provider')
   async getSchedule(@CurrentUser() user : AuthUserDto): Promise<WeeklyScheduleResponseDto> {
     const entity = await this.availabilityService.getSchedule(user.id);
     return this.toWeeklyScheduleResponse(entity);
   }
-    
+
   @Put('schedule')
   @Roles('provider')
   async updateSchedule(@CurrentUser() user : AuthUserDto, @Body() dto: WeeklyScheduleRequestDto): Promise<WeeklyScheduleResponseDto> {
-    const serviceDto = new WeeklyScheduleDtoService(user.id, dto.slots);
+    const serviceDto = new WeeklyScheduleDtoService(user.id, dto.slots, dto.appointmentGap ?? 0);
     const entity = await this.availabilityService.updateSchedule(user.id, serviceDto);
     return this.toWeeklyScheduleResponse(entity);
   }
@@ -115,6 +115,7 @@ export class AvailabilityController {
         id: entity.getId()!,
         providerId: entity.getProviderId(),
         slots: entity.getSlots(),
+        appointmentGap: entity.getAppointmentGap(),
         createdAt: entity.getCreatedAt()!,
         updatedAt: entity.getUpdatedAt()!,
     };
