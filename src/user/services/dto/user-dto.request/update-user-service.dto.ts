@@ -1,4 +1,5 @@
 import { UpdateProviderDataDtoService } from './update-providerData-service.dto';
+import { ReminderSettingsEntity } from 'src/user/domain/entities/user.entity';
 
 export class UpdateUserDtoService {
     private readonly name?: string;
@@ -7,6 +8,7 @@ export class UpdateUserDtoService {
     private readonly password?: string;
     private readonly providerData?: UpdateProviderDataDtoService;
     private readonly isActive? : boolean;
+    private readonly reminderSettings?: ReminderSettingsEntity;
 
     constructor(
         name?: string,
@@ -14,7 +16,8 @@ export class UpdateUserDtoService {
         phone?: string,
         password?: string,
         providerData?: UpdateProviderDataDtoService,
-        isActive? : boolean
+        isActive? : boolean,
+        reminderSettings?: ReminderSettingsEntity
     ) {
         this.name = name;
         this.email = email;
@@ -22,6 +25,7 @@ export class UpdateUserDtoService {
         this.password = password;
         this.providerData = providerData;
         this.isActive = isActive;
+        this.reminderSettings = reminderSettings;
     }
 
     getName(): string | undefined { 
@@ -46,6 +50,10 @@ export class UpdateUserDtoService {
 
     getIsActive() : boolean | undefined{
         return this.isActive;
+    }
+
+    getReminderSettings(): ReminderSettingsEntity | undefined {
+        return this.reminderSettings;
     }
 
 }

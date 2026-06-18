@@ -103,7 +103,8 @@ export class UserController {
       entity.getRole(),
       providerData,
       entity.getCreatedAt(),
-      entity.getIsActive()
+      entity.getIsActive(),
+      entity.getReminderSettings()
     );
   }
 

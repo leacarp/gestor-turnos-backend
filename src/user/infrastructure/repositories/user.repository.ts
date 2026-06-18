@@ -135,7 +135,8 @@ export class UserRepository implements IUserRepository{
             user.createdAt,
             user.updatedAt,
             user.id.toString(),
-            user.isActive
+            user.isActive,
+            user.reminderSettings ?? undefined
         );
     }
 
@@ -223,6 +224,10 @@ export class UserRepository implements IUserRepository{
 
         if (user.getIsActive() !== undefined) {
             updateData.isActive = user.getIsActive();
+        }
+
+        if (user.getReminderSettings() !== undefined) {
+            updateData.reminderSettings = user.getReminderSettings();
         }
 
         return updateData;

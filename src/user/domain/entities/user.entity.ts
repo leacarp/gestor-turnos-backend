@@ -1,6 +1,11 @@
 import { ProviderDataEntity } from "./providerData.entity";
 import { SocialMediaLinkEntity } from "./socialMediaLink.entity";
 
+export interface ReminderSettingsEntity {
+    whatsapp: { enabled: boolean; t24h: boolean; t2h: boolean };
+    email: { enabled: boolean; t24h: boolean };
+    messageTemplate: string;
+}
 
 export class UserEntity {
     private _id? : string;
@@ -14,8 +19,9 @@ export class UserEntity {
     private _createdAt: Date;
     private _updatedAt: Date;
     private _isActive : boolean;
+    private _reminderSettings?: ReminderSettingsEntity;
 
-    constructor(name: string, email: string, phone: string, password: string, role: string, providerData: ProviderDataEntity | undefined, socialMediaLink: SocialMediaLinkEntity[], createdAt: Date, updatedAt: Date, id?: string, isActive: boolean = true){
+    constructor(name: string, email: string, phone: string, password: string, role: string, providerData: ProviderDataEntity | undefined, socialMediaLink: SocialMediaLinkEntity[], createdAt: Date, updatedAt: Date, id?: string, isActive: boolean = true, reminderSettings?: ReminderSettingsEntity){
         this._name = name;
         this._email = email;
         this._phone = phone;
@@ -27,6 +33,7 @@ export class UserEntity {
         this._updatedAt = updatedAt;
         this._isActive = isActive;
         this._id = id;
+        this._reminderSettings = reminderSettings;
     }
 
     getName() : string{
@@ -71,5 +78,9 @@ export class UserEntity {
 
     getId() : string | undefined{
         return this._id;
+    }
+
+    getReminderSettings(): ReminderSettingsEntity | undefined {
+        return this._reminderSettings;
     }
 }
