@@ -23,6 +23,9 @@ export class WeeklySchedule extends Document{
   }])
   slots: DaySlot[];
 
+  @Prop({ type: Number, default: 0 })
+  appointmentGap: number;
+
   createdAt: Date;
   updatedAt: Date;
 }

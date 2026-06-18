@@ -6,15 +6,17 @@ export class WeeklyScheduleDtoService {
     endTime: string;
     isActive: boolean;
   }[];
+  private _appointmentGap: number;
 
   constructor(providerId: string, slots: {
     dayOfWeek: number;
     startTime: string;
     endTime: string;
     isActive: boolean;
-  }[] ){
+  }[], appointmentGap: number = 0){
     this._providerId = providerId;
     this._slots = slots;
+    this._appointmentGap = appointmentGap;
   }
 
   getProviderId() : string{
@@ -28,5 +30,9 @@ export class WeeklyScheduleDtoService {
     isActive: boolean;
   }[] {
     return this._slots;
+  }
+
+  getAppointmentGap() : number {
+    return this._appointmentGap;
   }
 }

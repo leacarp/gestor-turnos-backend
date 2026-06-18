@@ -1,7 +1,63 @@
-import { IsString, IsEmail, IsEnum, ValidateNested, IsOptional, MinLength, IsBoolean } from 'class-validator';
+import { IsString, IsEmail, ValidateNested, IsOptional, MinLength, IsBoolean } from 'class-validator';
 import { Type } from 'class-transformer';
 import { UpdateUserDtoService } from 'src/user/services/dto/user-dto.request/update-user-service.dto';
 import { UpdateProviderDataDtoRequest } from './update-providerData.dto';
+import type { ReminderSettingsEntity } from 'src/user/domain/entities/user.entity';
+
+export class ReminderChannelWhatsappDto {
+    @IsOptional()
+    @IsBoolean()
+    enabled?: boolean;
+
+    @IsOptional()
+    @IsBoolean()
+    t24h?: boolean;
+
+    @IsOptional()
+    @IsBoolean()
+    t2h?: boolean;
+}
+
+export class ReminderChannelEmailDto {
+    @IsOptional()
+    @IsBoolean()
+    enabled?: boolean;
+
+    @IsOptional()
+    @IsBoolean()
+    t24h?: boolean;
+}
+
+export class ReminderSettingsDtoRequest {
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => ReminderChannelWhatsappDto)
+    whatsapp?: ReminderChannelWhatsappDto;
+
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => ReminderChannelEmailDto)
+    email?: ReminderChannelEmailDto;
+
+    @IsOptional()
+    @IsString()
+    messageTemplate?: string;
+
+    toEntity(): ReminderSettingsEntity {
+        return {
+            whatsapp: {
+                enabled: this.whatsapp?.enabled ?? false,
+                t24h: this.whatsapp?.t24h ?? false,
+                t2h: this.whatsapp?.t2h ?? false,
+            },
+            email: {
+                enabled: this.email?.enabled ?? false,
+                t24h: this.email?.t24h ?? false,
+            },
+            messageTemplate: this.messageTemplate ?? '',
+        };
+    }
+}
 
 export class UpdateUserDtoRequest {
     @IsString()
@@ -32,13 +88,19 @@ export class UpdateUserDtoRequest {
     @IsBoolean()
     isActive?: boolean;
 
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => ReminderSettingsDtoRequest)
+    reminderSettings?: ReminderSettingsDtoRequest;
+
     constructor(
         name?: string,
         email?: string,
         phone?: string,
         password?: string,
         providerData?: UpdateProviderDataDtoRequest,
-        isActive? : boolean
+        isActive?: boolean,
+        reminderSettings?: ReminderSettingsDtoRequest
     ) {
         this.name = name;
         this.email = email;
@@ -46,32 +108,37 @@ export class UpdateUserDtoRequest {
         this.password = password;
         this.providerData = providerData;
         this.isActive = isActive;
+        this.reminderSettings = reminderSettings;
     }
 
-    getName(): string | undefined { 
-        return this.name; 
+    getName(): string | undefined {
+        return this.name;
     }
 
-    getEmail(): string | undefined { 
-        return this.email; 
+    getEmail(): string | undefined {
+        return this.email;
     }
 
-    getPhone(): string | undefined { 
-        return this.phone; 
+    getPhone(): string | undefined {
+        return this.phone;
     }
-    
-    getPassword(): string | undefined { 
-        return this.password; 
+
+    getPassword(): string | undefined {
+        return this.password;
     }
-   
+
     getProviderData(): UpdateProviderDataDtoRequest | undefined {
-         return this.providerData; 
+        return this.providerData;
     }
 
-    getIsActive() : boolean | undefined{
+    getIsActive(): boolean | undefined {
         return this.isActive;
     }
-    
+
+    getReminderSettings(): ReminderSettingsEntity | undefined {
+        return this.reminderSettings ? this.reminderSettings.toEntity() : undefined;
+    }
+
     toServiceDto(): UpdateUserDtoService {
         const providerDataService = this.providerData ? this.providerData.toServiceDto() : undefined;
 
@@ -80,8 +147,9 @@ export class UpdateUserDtoRequest {
             this.email,
             this.phone,
             this.password,
-            providerDataService, 
-            this.isActive
+            providerDataService,
+            this.isActive,
+            this.getReminderSettings()
         );
     }
 }

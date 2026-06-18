@@ -34,7 +34,7 @@ export class AvailabilityService implements IAvailabilityService{
       throw new BadRequestException('Provider already has a schedule');
     }
 
-    const schedule = new WeeklyScheduleEntity(dto.getProviderId(), dto.getSlots());
+    const schedule = new WeeklyScheduleEntity(dto.getProviderId(), dto.getSlots(), undefined, undefined, undefined, dto.getAppointmentGap());
     return this.availabilityRepository.createSchedule(schedule);
   }
 
@@ -57,7 +57,7 @@ export class AvailabilityService implements IAvailabilityService{
       throw new NotFoundException('Provider not found');
     }
 
-    const schedule = new WeeklyScheduleEntity(providerId, dto.getSlots());
+    const schedule = new WeeklyScheduleEntity(providerId, dto.getSlots(), undefined, undefined, undefined, dto.getAppointmentGap());
     const updated = await this.availabilityRepository.updateSchedule(providerId, schedule);
     if (!updated) {
       throw new NotFoundException('Schedule not found for this provider');
@@ -150,7 +150,7 @@ export class AvailabilityService implements IAvailabilityService{
     }
 
     const serviceDuration = await this.servicePort.getDuration(dto.getServiceId());
-    const possibleSlots = this.splitSlotsByDuration(daySlots, serviceDuration);
+    const possibleSlots = this.splitSlotsByDuration(daySlots, serviceDuration, schedule.getAppointmentGap());
     const bookedSlots = await this.appointmentPort.getBookedSlots(
       dto.getProviderId(),
       dto.getDate(),
@@ -164,8 +164,10 @@ export class AvailabilityService implements IAvailabilityService{
   private splitSlotsByDuration(
     daySlots: { startTime: string; endTime: string }[],
     durationInMinutes: number,
+    gapInMinutes: number = 0,
   ): { startTime: string; endTime: string }[] {
     const slots: { startTime: string; endTime: string }[] = [];
+    const step = durationInMinutes + gapInMinutes;
 
     for (const daySlot of daySlots) {
       const blockStart = this.timeToMinutes(daySlot.startTime);
@@ -174,7 +176,7 @@ export class AvailabilityService implements IAvailabilityService{
       for (
         let start = blockStart;
         start + durationInMinutes <= blockEnd;
-        start += durationInMinutes
+        start += step
       ) {
         slots.push({
           startTime: this.minutesToTime(start),

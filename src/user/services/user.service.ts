@@ -95,6 +95,7 @@ export class UserService implements IUserService {
       new Date(),
       currentUser.getId(),
       dto.getIsActive() ?? currentUser.getIsActive(),
+      dto.getReminderSettings() ?? currentUser.getReminderSettings(),
     );
 
     return this.userRepository.updateUser(userId, updatedUser);
