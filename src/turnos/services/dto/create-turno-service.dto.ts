@@ -1,9 +1,11 @@
+import { ClientDetailsService } from "./client-details-service.dto";
+
 export class CreateTurnoServiceDto {
   private readonly fecha: Date;
   private readonly horaInicio: string;
   private readonly proveedorId: string;
   private readonly servicioId: string;
-  private readonly clienteId: string;
+  private readonly cliente: ClientDetailsService;
   private readonly notas?: string;
 
   constructor(
@@ -11,14 +13,14 @@ export class CreateTurnoServiceDto {
     horaInicio: string,
     proveedorId: string,
     servicioId: string,
-    clienteId: string,
+    cliente: ClientDetailsService,
     notas?: string,
   ) {
     this.fecha = fecha;
     this.horaInicio = horaInicio;
     this.proveedorId = proveedorId;
     this.servicioId = servicioId;
-    this.clienteId = clienteId;
+    this.cliente = cliente;
     this.notas = notas;
   }
 
@@ -38,8 +40,8 @@ export class CreateTurnoServiceDto {
     return this.servicioId;
   }
 
-  getClienteId(): string {
-    return this.clienteId;
+  getCliente(): ClientDetailsService {
+    return this.cliente;
   }
 
   getNotas(): string | undefined {

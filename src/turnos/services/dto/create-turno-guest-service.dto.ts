@@ -1,11 +1,11 @@
-import { GuestDetailsService } from "./guestDetails-service.dto";
+import { ClientDetailsService } from "./client-details-service.dto";
 
 export class CreateTurnoGuestServiceDto {
   private readonly fecha: Date;
   private readonly horaInicio: string;
   private readonly proveedorId: string;
   private readonly servicioId: string;
-  private readonly guestDetails : GuestDetailsService;
+  private readonly guestDetails : ClientDetailsService;
   private readonly notas?: string;
 
   constructor(
@@ -13,14 +13,14 @@ export class CreateTurnoGuestServiceDto {
     horaInicio: string,
     proveedorId: string,
     servicioId: string,
-    guestDetails: GuestDetailsService,
+    ClientDetails: ClientDetailsService,
     notas?: string,
   ) {
     this.fecha = fecha;
     this.horaInicio = horaInicio;
     this.proveedorId = proveedorId;
     this.servicioId = servicioId;
-    this.guestDetails = guestDetails;
+    this.guestDetails = ClientDetails;
     this.notas = notas;
   }
 
@@ -40,7 +40,7 @@ export class CreateTurnoGuestServiceDto {
     return this.servicioId;
   }
 
-  getGuestDetails() : GuestDetailsService{
+  getGuestDetails() : ClientDetailsService{
     return this.guestDetails;
   }
 

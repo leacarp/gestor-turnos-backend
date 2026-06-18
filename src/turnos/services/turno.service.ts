@@ -16,6 +16,9 @@ import {
   TURNO_USER_ADAPTER,
   TURNO_SERVICIO_ADAPTER,
 } from '../infrastructure/constants/injection-tokens.js';
+import { CreateTurnoGuestServiceDto } from './dto/create-turno-guest-service.dto.js';
+import { CreateTurnoServiceDto } from './dto/create-turno-service.dto.js';
+import { Turno } from '../infrastructure/schemas/turno.schema.js';
 
 @Injectable()
 export class TurnoService implements ITurnoService {
@@ -29,14 +32,11 @@ export class TurnoService implements ITurnoService {
     private readonly servicioAdapter: IServicioAdapter,
   ) {}
 
-  async create(
-    fecha: Date,
-    horaInicio: string,
-    proveedorId: string,
-    servicioId: string,
-    clienteId: string,
-    notas?: string,
-  ): Promise<TurnoEntity> {
+  async create(dto: CreateTurnoServiceDto, userId: string): Promise<TurnoEntity> {
+
+    const proveedorId = dto.getProveedorId();
+    const servicioId = dto.getServicioId();
+    const clienteId = dto.getCliente().getId() ?? 'ID desconocido';
     await this.validateProvider(proveedorId);
     await this.validateClient(clienteId);
     await this.validateServicio(servicioId, proveedorId);
@@ -48,41 +48,33 @@ export class TurnoService implements ITurnoService {
         'Este servicio requiere el pago de una seña. Usá POST /api/mercadopago/preference para iniciar el proceso de pago.',
       );
     }
-
-    const entity = new TurnoEntity(
-      fecha,
-      horaInicio,
-      'pendiente',
-      proveedorId,
-      servicioId,
-      clienteId,
-      notas,
-    );
-
-    return this.turnoRepository.create(entity);
+    
+    const turno = TurnoEntity.createForRegistered(dto, userId);
+    return await this.turnoRepository.create(turno);
   }
 
-  async createFromPago(
-    fecha: Date,
-    horaInicio: string,
-    proveedorId: string,
-    servicioId: string,
-    clienteId: string,
-    pagoId: string,
-    notas?: string,
-  ): Promise<TurnoEntity> {
-    const entity = new TurnoEntity(
-      fecha,
-      horaInicio,
-      'confirmado',
-      proveedorId,
-      servicioId,
-      clienteId,
-      notas,
-      pagoId,
-    );
+  async createTurnoGuest(dto: CreateTurnoGuestServiceDto): Promise<TurnoEntity> {
+    const proveedorId = dto.getProveedorId();
+    const servicioId = dto.getServicioId();
+    await this.validateProvider(proveedorId);
+    await this.validateServicio(servicioId, proveedorId);
 
-    return this.turnoRepository.create(entity);
+    const necesitaSeña = await this.servicioAdapter.requiereSeña(servicioId);
+
+    if (necesitaSeña) {
+      throw new BadRequestException(
+        'Este servicio requiere el pago de una seña. Usá POST /api/mercadopago/preference para iniciar el proceso de pago.',
+      );
+    }
+    
+    const turno = TurnoEntity.createForGuest(dto);
+    return await this.turnoRepository.create(turno);
+  }
+
+  async createFromPago(dto: CreateTurnoServiceDto): Promise<TurnoEntity> {
+
+    const turno = TurnoEntity.createForRegistered(dto, dto.getCliente().getId() || 'ID desconocido');
+    return this.turnoRepository.create(turno);
   }
 
   async findById(id: string): Promise<TurnoEntity> {
@@ -172,10 +164,11 @@ export class TurnoService implements ITurnoService {
     if (userRole === 'admin') return;
 
     const isProvider = turno.getProveedorId() === userId;
-    const isClient = turno.getClienteId() === userId;
+    const isClient = turno.getCliente().getId() === userId;
 
     if (!isProvider && !isClient) {
       throw new ForbiddenException('No tenés permisos para modificar este turno');
     }
   }
+
 }

@@ -1,6 +1,7 @@
-import { IsString, IsNotEmpty, IsDateString, IsOptional, IsMongoId } from 'class-validator';
+import { IsString, IsNotEmpty, IsDateString, IsOptional, IsMongoId, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import { CreateTurnoServiceDto } from '../../../services/dto/create-turno-service.dto.js';
-
+import { ClienteRequestDto } from './clientDetails-request.dto.js';
 export class CreateTurnoRequestDto {
   @IsDateString()
   @IsNotEmpty()
@@ -18,9 +19,10 @@ export class CreateTurnoRequestDto {
   @IsNotEmpty()
   private readonly servicioId: string;
 
-  @IsMongoId()
+  @ValidateNested()
+  @Type(() => ClienteRequestDto)
   @IsNotEmpty()
-  private readonly clienteId: string;
+  private readonly cliente: ClienteRequestDto;
 
   @IsOptional()
   @IsString()
@@ -31,14 +33,14 @@ export class CreateTurnoRequestDto {
     horaInicio: string,
     proveedorId: string,
     servicioId: string,
-    clienteId: string,
+    cliente: ClienteRequestDto,
     notas?: string,
   ) {
     this.fecha = fecha;
     this.horaInicio = horaInicio;
     this.proveedorId = proveedorId;
     this.servicioId = servicioId;
-    this.clienteId = clienteId;
+    this.cliente = cliente;
     this.notas = notas;
   }
 
@@ -58,8 +60,8 @@ export class CreateTurnoRequestDto {
     return this.servicioId;
   }
 
-  getClienteId(): string {
-    return this.clienteId;
+  getCliente(): ClienteRequestDto {
+    return this.cliente;
   }
 
   getNotas(): string | undefined {
@@ -72,7 +74,7 @@ export class CreateTurnoRequestDto {
       this.horaInicio,
       this.proveedorId,
       this.servicioId,
-      this.clienteId,
+      this.cliente.toServiceDto(),
       this.notas,
     );
   }

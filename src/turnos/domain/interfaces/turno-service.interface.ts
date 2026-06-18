@@ -1,14 +1,11 @@
 import { TurnoEntity } from '../entities/turno.entity.js';
+import { CreateTurnoServiceDto } from 'src/turnos/services/dto/create-turno-service.dto.js';
+import { CreateTurnoGuestServiceDto } from 'src/turnos/services/dto/create-turno-guest-service.dto.js';
 
 export interface ITurnoService {
-  create(
-    fecha: Date,
-    horaInicio: string,
-    proveedorId: string,
-    servicioId: string,
-    clienteId: string,
-    notas?: string,
-  ): Promise<TurnoEntity>;
+  create(dto: CreateTurnoServiceDto, userId: string): Promise<TurnoEntity>;
+
+  createTurnoGuest(dto: CreateTurnoGuestServiceDto): Promise<TurnoEntity>;
 
   findById(id: string): Promise<TurnoEntity>;
 
@@ -29,13 +26,5 @@ export interface ITurnoService {
 
   delete(id: string, userId: string, userRole: string): Promise<void>;
 
-  createFromPago(
-    fecha: Date,
-    horaInicio: string,
-    proveedorId: string,
-    servicioId: string,
-    clienteId: string,
-    pagoId: string,
-    notas?: string,
-  ): Promise<TurnoEntity>;
+  createFromPago(dto: CreateTurnoServiceDto): Promise<TurnoEntity>;
 }

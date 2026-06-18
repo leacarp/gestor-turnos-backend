@@ -1,3 +1,7 @@
+import { BadRequestException } from "@nestjs/common";
+import { ClienteEntity } from "./cliente.entity";
+import { CreateTurnoServiceDto } from "src/turnos/services/dto/create-turno-service.dto";
+import { CreateTurnoGuestServiceDto } from "src/turnos/services/dto/create-turno-guest-service.dto";
 export class TurnoEntity {
   private readonly _id?: string;
   private readonly _fecha: Date;
@@ -6,35 +10,38 @@ export class TurnoEntity {
   private readonly _notas?: string;
   private readonly _proveedorId: string;
   private readonly _servicioId: string;
-  private readonly _clienteId: string;
   private readonly _pagoId?: string;
   private readonly _createdAt?: Date;
   private readonly _updatedAt?: Date;
+  private readonly _cliente: ClienteEntity;
+ 
 
   constructor(
-    fecha: Date,
-    horaInicio: string,
-    estado: string,
-    proveedorId: string,
-    servicioId: string,
-    clienteId: string,
-    notas?: string,
-    pagoId?: string,
-    createdAt?: Date,
-    updatedAt?: Date,
-    id?: string,
+    props: {
+    fecha: Date;
+    horaInicio: string;
+    estado: string;
+    proveedorId: string;
+    servicioId: string;
+    cliente: ClienteEntity;
+    notas?: string;
+    pagoId?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    id?: string;
+  }
   ) {
-    this._fecha = fecha;
-    this._horaInicio = horaInicio;
-    this._estado = estado;
-    this._proveedorId = proveedorId;
-    this._servicioId = servicioId;
-    this._clienteId = clienteId;
-    this._notas = notas;
-    this._pagoId = pagoId;
-    this._createdAt = createdAt;
-    this._updatedAt = updatedAt;
-    this._id = id;
+    this._fecha = props.fecha;
+    this._horaInicio = props.horaInicio;
+    this._estado = props.estado || 'pendiente';
+    this._proveedorId = props.proveedorId;
+    this._servicioId = props.servicioId;
+    this._cliente = props.cliente;
+    this._notas = props.notas;
+    this._pagoId = props.pagoId;
+    this._createdAt = props.createdAt || new Date();
+    this._updatedAt = props.updatedAt || new Date();
+    this._id = props.id;
   }
 
   getId(): string | undefined {
@@ -65,8 +72,8 @@ export class TurnoEntity {
     return this._servicioId;
   }
 
-  getClienteId(): string {
-    return this._clienteId;
+  getCliente() : ClienteEntity {
+    return this._cliente;
   }
 
   getPagoId(): string | undefined {
@@ -79,5 +86,36 @@ export class TurnoEntity {
 
   getUpdatedAt(): Date | undefined {
     return this._updatedAt;
+  }
+
+  static createForRegistered(dto: CreateTurnoServiceDto, id: string): TurnoEntity {
+    const cliente = ClienteEntity.createRegistered(id);
+  
+    return new TurnoEntity({
+    fecha: new Date(dto.getFecha()),
+    horaInicio: dto.getHoraInicio(),
+    estado: 'pendiente',
+    proveedorId: dto.getProveedorId(),
+    servicioId: dto.getServicioId(),
+    cliente: cliente,
+    notas: dto.getNotas()
+    })
+  }
+
+  static createForGuest(dto: CreateTurnoGuestServiceDto) : TurnoEntity{
+    const nombre = dto.getGuestDetails().getNombre() ?? 'Nombre vacio';
+    const email = dto.getGuestDetails().getEmail() ?? 'Email vacio';
+    const celular = dto.getGuestDetails().getCelular() ?? 'Celular vacio';
+    const cliente = ClienteEntity.createGuest(nombre, email, celular);
+
+    return new TurnoEntity({
+    fecha: new Date(dto.getFecha()),
+    horaInicio: dto.getHoraInicio(),
+    estado: 'pendiente',
+    proveedorId: dto.getProveedorId(),
+    servicioId: dto.getServicioId(),
+    cliente: cliente,
+    notas: dto.getNotas()
+  })
   }
 }

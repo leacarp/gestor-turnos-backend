@@ -27,11 +27,23 @@ export class Turno {
   @Prop({ type: Types.ObjectId, ref: 'Servicio', required: true })
   servicioId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  @Prop({ type: Types.ObjectId, ref: 'User'})
   clienteId: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, ref: 'Pago', required: false })
   pagoId?: Types.ObjectId;
+
+  @Prop({ required: true, enum: ['REGISTRADO', 'INVITADO'] })
+  tipoCliente: 'REGISTRADO' | 'INVITADO';
+
+  @Prop()
+  clienteNombre?: string;
+
+  @Prop()
+  clienteEmail?: string;
+
+  @Prop()
+  clienteCelular?: string;
 
   createdAt?: Date;
   updatedAt?: Date;
