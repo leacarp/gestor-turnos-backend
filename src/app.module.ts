@@ -9,6 +9,7 @@ import { ServiciosModule } from './servicios/servicios.module';
 import { TurnosModule } from './turnos/turnos.module';
 import { PagosModule } from './pagos/pagos.module';
 import { MercadoPagoModule } from './mercadopago/mercadopago.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { MercadoPagoModule } from './mercadopago/mercadopago.module';
     TurnosModule,
     PagosModule,
     MercadoPagoModule,
+    DashboardModule,
   ],
   controllers: [],
   providers: [],
