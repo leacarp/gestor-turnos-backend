@@ -165,15 +165,16 @@ export class MercadoPagoService {
       servicioId: metadata.servicio_id,
     });
 
-    await this.turnoService.createFromPago(
+    
+    /* await this.turnoService.createFromPago(
       new Date(metadata.fecha),
       metadata.hora_inicio,
       metadata.proveedor_id,
       metadata.servicio_id,
       metadata.cliente_id,
       pago.getId()!,
-      metadata.notas,
-    );
+      metadata.notas
+    ); */
 
     this.logger.log(`Turno creado desde pago MP ${paymentId} (ref: ${externalReference})`);
   }

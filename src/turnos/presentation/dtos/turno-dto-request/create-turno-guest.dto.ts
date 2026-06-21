@@ -1,8 +1,9 @@
 import { IsString, IsNotEmpty, IsDateString, IsOptional, IsMongoId, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CreateTurnoServiceDto } from '../../../services/dto/create-turno-service.dto.js';
-import { ClienteRequestDto } from './clientDetails-request.dto.js';
-export class CreateTurnoRequestDto {
+import { CreateTurnoGuestServiceDto } from 'src/turnos/services/dto/create-turno-guest-service.dto';
+import { ClienteRequestDto } from './clientDetails-request.dto';
+
+export class CreateTurnoGuestRequestDto {
   @IsDateString()
   @IsNotEmpty()
   private readonly fecha: string;
@@ -22,7 +23,7 @@ export class CreateTurnoRequestDto {
   @ValidateNested()
   @Type(() => ClienteRequestDto)
   @IsNotEmpty()
-  private readonly cliente: ClienteRequestDto;
+  private readonly clienteDetails : ClienteRequestDto;
 
   @IsOptional()
   @IsString()
@@ -33,14 +34,14 @@ export class CreateTurnoRequestDto {
     horaInicio: string,
     proveedorId: string,
     servicioId: string,
-    cliente: ClienteRequestDto,
+    GuestDetails: ClienteRequestDto,
     notas?: string,
   ) {
     this.fecha = fecha;
     this.horaInicio = horaInicio;
     this.proveedorId = proveedorId;
     this.servicioId = servicioId;
-    this.cliente = cliente;
+    this.clienteDetails = GuestDetails;
     this.notas = notas;
   }
 
@@ -60,26 +61,22 @@ export class CreateTurnoRequestDto {
     return this.servicioId;
   }
 
-  getCliente(): ClienteRequestDto {
-    return this.cliente;
+  getGuestDetails() : ClienteRequestDto{
+    return this.clienteDetails;
   }
-
+  
   getNotas(): string | undefined {
     return this.notas;
   }
 
-  toServiceDto(): CreateTurnoServiceDto {
-    return new CreateTurnoServiceDto(
-      this.parseLocalDate(this.fecha),
+  toServiceDto(): CreateTurnoGuestServiceDto {
+    return new CreateTurnoGuestServiceDto(
+      new Date(this.fecha),
       this.horaInicio,
       this.proveedorId,
       this.servicioId,
-      this.cliente.toServiceDto(),
+      this.clienteDetails.toServiceDto(),
       this.notas,
     );
-  }
-
-  private parseLocalDate(date: string): Date {
-    return new Date(date + 'T00:00:00');
   }
 }

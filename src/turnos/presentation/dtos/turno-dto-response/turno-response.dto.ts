@@ -64,7 +64,7 @@ export class TurnoResponseDto {
       entity.getEstado(),
       entity.getProveedorId(),
       entity.getServicioId(),
-      entity.getClienteId(),
+      entity.getCliente().getId() ?? 'ID Desconocido',
       entity.getCreatedAt()!,
       entity.getNotas(),
       entity.getPagoId(),

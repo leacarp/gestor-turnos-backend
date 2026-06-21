@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import type { ITurnoRepository } from '../../domain/interfaces/turno-repository.interface.js';
 import { TurnoEntity } from '../../domain/entities/turno.entity.js';
+import { ClienteEntity } from '../../domain/entities/cliente.entity.js';
 import { Turno, TurnoDocument } from '../schemas/turno.schema.js';
 
 @Injectable()
@@ -14,18 +15,28 @@ export class TurnoRepository implements ITurnoRepository {
   ) {}
 
   async create(entity: TurnoEntity): Promise<TurnoEntity> {
-    const turno = new this.turnoModel({
+    const cliente = entity.getCliente();
+
+    const turnoData: any = {
       fecha: entity.getFecha(),
       horaInicio: entity.getHoraInicio(),
       estado: entity.getEstado(),
       notas: entity.getNotas(),
       proveedorId: new Types.ObjectId(entity.getProveedorId()),
       servicioId: new Types.ObjectId(entity.getServicioId()),
-      clienteId: new Types.ObjectId(entity.getClienteId()),
-    });
+      tipoCliente: cliente.getTipo()
+    };
 
+    if (cliente.getTipo() === 'REGISTRADO') {
+      turnoData.clienteId = new Types.ObjectId(cliente.getId());
+    } else {
+      turnoData.clienteNombre = cliente.getNombre();
+      turnoData.clienteEmail = cliente.getEmail();
+      turnoData.clienteCelular = cliente.getCelular();
+    }
+
+    const turno = new this.turnoModel(turnoData);
     const saved = await turno.save();
-
     return this.toEntity(saved);
   }
 
@@ -110,18 +121,30 @@ export class TurnoRepository implements ITurnoRepository {
   }
 
   private toEntity(doc: TurnoDocument): TurnoEntity {
-    return new TurnoEntity(
-      doc.fecha,
-      doc.horaInicio,
-      doc.estado,
-      doc.proveedorId.toString(),
-      doc.servicioId.toString(),
-      doc.clienteId.toString(),
-      doc.notas,
-      doc.pagoId?.toString(),
-      doc.createdAt,
-      doc.updatedAt,
-      doc._id.toString(),
+
+  let cliente: ClienteEntity;
+
+  if (doc.tipoCliente === 'REGISTRADO') {
+    cliente = ClienteEntity.createRegistered(doc.clienteId.toString());
+  } else {
+    cliente = ClienteEntity.createGuest(
+      doc.clienteNombre!, 
+      doc.clienteEmail!, 
+      doc.clienteCelular!
     );
+  }
+    return new TurnoEntity({
+      fecha: doc.fecha,
+      horaInicio: doc.horaInicio,
+      estado: doc.estado,
+      proveedorId: doc.proveedorId.toString(),
+      servicioId: doc.servicioId.toString(),
+      cliente: cliente,
+      notas: doc.notas,
+      pagoId: doc.pagoId?.toString(),
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+      id: doc._id.toString(),
+  });
   }
 }

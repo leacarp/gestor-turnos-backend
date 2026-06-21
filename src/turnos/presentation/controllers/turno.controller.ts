@@ -15,12 +15,14 @@ import { TURNO_SERVICE } from '../../infrastructure/constants/injection-tokens.j
 import { ParseMongoIdPipe } from '../../../common/pipes/parse-mongo-id.pipe.js';
 
 import { CreateTurnoRequestDto } from '../dtos/turno-dto-request/create-turno-request.dto.js';
+import { CreateTurnoGuestRequestDto } from '../dtos/turno-dto-request/create-turno-guest.dto.js';
 import { UpdateTurnoRequestDto } from '../dtos/turno-dto-request/update-turno-request.dto.js';
 import { TurnoResponseDto } from '../dtos/turno-dto-response/turno-response.dto.js';
 
 import { JwtAuthGuard } from '../../../auth/infrastructure/guards/jwt-auth.guard.js';
 import { RolesGuard } from '../../../auth/infrastructure/guards/roles.guard.js';
 import { Roles } from '../../../auth/presentation/decorators/roles.decorator.js';
+import { Public } from '../../../auth/presentation/decorators/public.decorator.js';
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator.js';
 
 @Controller('turnos')
@@ -39,14 +41,18 @@ export class TurnoController {
     @CurrentUser() user: { id: string; role: string },
   ): Promise<TurnoResponseDto> {
     const serviceDto = dto.toServiceDto();
-    const entity = await this.turnoService.create(
-      serviceDto.getFecha(),
-      serviceDto.getHoraInicio(),
-      serviceDto.getProveedorId(),
-      serviceDto.getServicioId(),
-      serviceDto.getClienteId(),
-      serviceDto.getNotas(),
-    );
+    const userId = user.id;
+    const entity = await this.turnoService.create(serviceDto, userId);
+    return TurnoResponseDto.fromEntity(entity);
+  }
+
+  @Post('guest')
+  @Public()
+  async createGuest(
+    @Body() dto: CreateTurnoGuestRequestDto,
+  ): Promise<TurnoResponseDto> {
+    const serviceDto = dto.toServiceDto();
+    const entity = await this.turnoService.createTurnoGuest(serviceDto);
     return TurnoResponseDto.fromEntity(entity);
   }
 
