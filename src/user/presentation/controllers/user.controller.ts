@@ -5,11 +5,13 @@ import { JwtAuthGuard } from 'src/auth/infrastructure/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/infrastructure/guards/roles.guard';
 import { Roles } from 'src/auth/presentation/decorators/roles.decorator';
 import { CurrentUser } from 'src/auth/presentation/decorators/current-user.decorator';
+import { Public } from 'src/auth/presentation/decorators/public.decorator';
 import { AuthUserDto } from 'src/auth/presentation/dtos/auth-dto-response/auth-user.dto';
 import { CreateUserDtoRequest } from '../dtos/user-dto-request/create-user.dto';
 import { UserResponseDto } from '../dtos/user-dto-response/user.dto';
 import { ProviderDataResponseDto } from '../dtos/user-dto-response/providerData.dto';
 import { SocialMediaResponseDto } from '../dtos/user-dto-response/socialMedia.dto';
+import { PublicProviderProfileDto } from '../dtos/user-dto-response/public-provider-profile.dto';
 import { UpdateUserDtoRequest } from '../dtos/user-dto-request/update-user.dto';
 import { UserEntity } from 'src/user/domain/entities/user.entity';
 
@@ -45,12 +47,30 @@ export class UserController {
     return this.toResponseDto(entity);
   }
 
+  @Public()
+  @Get('profile/:id')
+  async getPublicProviderProfile(@Param('id') id: string): Promise<PublicProviderProfileDto> {
+    const entity = await this.userService.findOneUser(id);
+    const providerData = entity.getProviderData()
+      ? new ProviderDataResponseDto(
+          entity.getProviderData()!.getAddress(),
+          entity.getProviderData()!.getServiceType(),
+          entity.getProviderData()!.getMinimumAdvance(),
+          entity.getProviderData()!.getPublicInfo(),
+          entity.getProviderData()!.getSocialMediaLink().map(s =>
+            new SocialMediaResponseDto(s.getPlatform(), s.getUrl())
+          ),
+        )
+      : undefined;
+    return new PublicProviderProfileDto(entity.getId()!, entity.getName(), providerData);
+  }
+
   @Get(':id')
   @Roles('admin')
   async findOneUser(@Param('id') id: string) : Promise<UserResponseDto> {
     const entity =  await this.userService.findOneUser(id);
     return this.toResponseDto(entity);
-  } 
+  }
 
   @Put('me')
   @Roles('client', 'provider')

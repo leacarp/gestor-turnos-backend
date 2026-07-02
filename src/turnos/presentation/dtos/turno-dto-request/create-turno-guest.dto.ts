@@ -71,12 +71,16 @@ export class CreateTurnoGuestRequestDto {
 
   toServiceDto(): CreateTurnoGuestServiceDto {
     return new CreateTurnoGuestServiceDto(
-      new Date(this.fecha),
+      new Date(this.fecha + 'T00:00:00'),
       this.horaInicio,
       this.proveedorId,
       this.servicioId,
       this.clienteDetails.toServiceDto(),
       this.notas,
     );
+  }
+
+  private parseLocalDate(date: string): Date {
+    return new Date(date + 'T00:00:00');
   }
 }

@@ -73,11 +73,14 @@ export class TurnoRepository implements ITurnoRepository {
   }
 
   async findByProveedorAndDate(proveedorId: string, fecha: Date): Promise<TurnoEntity[]> {
-    const startOfDay = new Date(fecha);
-    startOfDay.setHours(0, 0, 0, 0);
+    // Build the range using the date components to avoid timezone drift.
+    // fecha is always expected to be a local-midnight Date (created via new Date("YYYY-MM-DDT00:00:00")).
+    const y = fecha.getFullYear();
+    const m = fecha.getMonth();
+    const d = fecha.getDate();
 
-    const endOfDay = new Date(fecha);
-    endOfDay.setHours(23, 59, 59, 999);
+    const startOfDay = new Date(y, m, d, 0, 0, 0, 0);
+    const endOfDay   = new Date(y, m, d, 23, 59, 59, 999);
 
     const turnos = await this.turnoModel.find({
       proveedorId: new Types.ObjectId(proveedorId),
