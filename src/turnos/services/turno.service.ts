@@ -4,9 +4,16 @@ import {
   NotFoundException,
   ForbiddenException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
+import axios from 'axios';
 
-import type { ITurnoService } from '../domain/interfaces/turno-service.interface.js';
+import type {
+  ITurnoService,
+  RecordatorioTurnoDto,
+  TurnoCanceladoDto,
+  AgendaTurnoDto,
+} from '../domain/interfaces/turno-service.interface.js';
 import type { ITurnoRepository } from '../domain/interfaces/turno-repository.interface.js';
 import type { IUserAdapter } from '../domain/interfaces/user-adapter.interface.js';
 import type { IServicioAdapter } from '../domain/interfaces/servicio-adapter.interface.js';
@@ -20,8 +27,11 @@ import { CreateTurnoGuestServiceDto } from './dto/create-turno-guest-service.dto
 import { CreateTurnoServiceDto } from './dto/create-turno-service.dto.js';
 import { Turno } from '../infrastructure/schemas/turno.schema.js';
 
+const RECORDATORIO_TOLERANCIA_MS = 20 * 60 * 1000;
+
 @Injectable()
 export class TurnoService implements ITurnoService {
+  private readonly logger = new Logger(TurnoService.name);
 
   constructor(
     @Inject(TURNO_REPOSITORY)
@@ -50,7 +60,9 @@ export class TurnoService implements ITurnoService {
     }
     
     const turno = TurnoEntity.createForRegistered(dto, userId);
-    return await this.turnoRepository.create(turno);
+    const creado = await this.turnoRepository.create(turno);
+    await this.notificarTurnoCreado(creado);
+    return creado;
   }
 
   async createTurnoGuest(dto: CreateTurnoGuestServiceDto): Promise<TurnoEntity> {
@@ -68,7 +80,9 @@ export class TurnoService implements ITurnoService {
     }
     
     const turno = TurnoEntity.createForGuest(dto);
-    return await this.turnoRepository.create(turno);
+    const creado = await this.turnoRepository.create(turno);
+    await this.notificarTurnoCreado(creado);
+    return creado;
   }
 
   async createFromPago(dto: CreateTurnoServiceDto): Promise<TurnoEntity> {
@@ -169,6 +183,160 @@ export class TurnoService implements ITurnoService {
     if (!isProvider && !isClient) {
       throw new ForbiddenException('No tenés permisos para modificar este turno');
     }
+  }
+
+  private async getClienteInfo(turno: TurnoEntity): Promise<{ nombre: string; email: string }> {
+    const cliente = turno.getCliente();
+
+    if (cliente.getTipo() === 'REGISTRADO') {
+      const info = await this.userAdapter.getContactInfo(cliente.getId()!);
+      return { nombre: info?.nombre ?? 'Cliente', email: info?.email ?? '' };
+    }
+
+    return { nombre: cliente.getNombre()!, email: cliente.getEmail()! };
+  }
+
+  private notificarN8n(url: string | undefined, payload: unknown): void {
+    if (!url) return;
+
+    axios.post(url, payload).catch((error) => {
+      this.logger.warn(`No se pudo notificar a n8n (${url}): ${error.message}`);
+    });
+  }
+
+  private async notificarTurnoCreado(turno: TurnoEntity): Promise<void> {
+    const [cliente, proveedor, servicio] = await Promise.all([
+      this.getClienteInfo(turno),
+      this.userAdapter.getContactInfo(turno.getProveedorId()),
+      this.servicioAdapter.getInfo(turno.getServicioId()),
+    ]);
+
+    this.notificarN8n(process.env.N8N_WEBHOOK_TURNO_CREADO, {
+      turnoId: turno.getId(),
+      fecha: turno.getFecha(),
+      horaInicio: turno.getHoraInicio(),
+      clienteNombre: cliente.nombre,
+      clienteEmail: cliente.email,
+      servicioNombre: servicio?.nombre ?? 'Servicio',
+      precio: servicio?.precio ?? 0,
+      proveedorNombre: proveedor?.nombre ?? 'Proveedor',
+      notas: turno.getNotas() ?? '',
+    });
+  }
+
+  async getRecordatorios(ventana: '12h' | '3h'): Promise<RecordatorioTurnoDto[]> {
+    const horas = ventana === '12h' ? 12 : 3;
+    const campoFlag = ventana === '12h' ? 'recordatorio12hEnviado' : 'recordatorio3hEnviado';
+
+    const ahora = new Date();
+    const objetivo = new Date(ahora.getTime() + horas * 60 * 60 * 1000);
+    const ventanaInicio = new Date(objetivo.getTime() - RECORDATORIO_TOLERANCIA_MS);
+    const ventanaFin = new Date(objetivo.getTime() + RECORDATORIO_TOLERANCIA_MS);
+
+    const turnos = await this.turnoRepository.findPendientesRecordatorio(
+      ventanaInicio,
+      ventanaFin,
+      campoFlag,
+    );
+
+    const resultados: RecordatorioTurnoDto[] = [];
+
+    for (const turno of turnos) {
+      const [cliente, proveedor, servicio] = await Promise.all([
+        this.getClienteInfo(turno),
+        this.userAdapter.getContactInfo(turno.getProveedorId()),
+        this.servicioAdapter.getInfo(turno.getServicioId()),
+      ]);
+
+      resultados.push({
+        turnoId: turno.getId()!,
+        fecha: turno.getFecha(),
+        horaInicio: turno.getHoraInicio(),
+        clienteNombre: cliente.nombre,
+        clienteEmail: cliente.email,
+        servicioNombre: servicio?.nombre ?? 'Servicio',
+        proveedorNombre: proveedor?.nombre ?? 'Proveedor',
+        proveedorReminderSettings: proveedor?.reminderSettings,
+      });
+    }
+
+    return resultados;
+  }
+
+  async marcarRecordatorioEnviado(id: string, tipo: '12h' | '3h'): Promise<void> {
+    const campoFlag = tipo === '12h' ? 'recordatorio12hEnviado' : 'recordatorio3hEnviado';
+    await this.turnoRepository.marcarRecordatorioEnviado(id, campoFlag);
+  }
+
+  async cancelarTurnosDelDia(
+    proveedorId: string,
+    fecha: Date,
+    userId: string,
+    userRole: string,
+  ): Promise<TurnoCanceladoDto[]> {
+    if (userRole !== 'admin' && !(userRole === 'provider' && userId === proveedorId)) {
+      throw new ForbiddenException('No tenés permisos para cancelar los turnos de este proveedor');
+    }
+
+    const cancelados = await this.turnoRepository.cancelarTurnosDelDia(proveedorId, fecha);
+
+    const resultados: TurnoCanceladoDto[] = [];
+
+    for (const turno of cancelados) {
+      const [cliente, proveedor, servicio] = await Promise.all([
+        this.getClienteInfo(turno),
+        this.userAdapter.getContactInfo(turno.getProveedorId()),
+        this.servicioAdapter.getInfo(turno.getServicioId()),
+      ]);
+
+      resultados.push({
+        turnoId: turno.getId()!,
+        fecha: turno.getFecha(),
+        horaInicio: turno.getHoraInicio(),
+        clienteNombre: cliente.nombre,
+        clienteEmail: cliente.email,
+        servicioNombre: servicio?.nombre ?? 'Servicio',
+        proveedorNombre: proveedor?.nombre ?? 'Proveedor',
+      });
+    }
+
+    this.notificarN8n(process.env.N8N_WEBHOOK_CANCELACION_DIA, { turnos: resultados });
+
+    return resultados;
+  }
+
+  async getAgendaDia(
+    proveedorId: string,
+    fecha: Date,
+    userId: string,
+    userRole: string,
+  ): Promise<AgendaTurnoDto[]> {
+    if (userRole !== 'admin' && !(userRole === 'provider' && userId === proveedorId)) {
+      throw new ForbiddenException('No tenés permisos para ver la agenda de este proveedor');
+    }
+
+    const turnos = await this.turnoRepository.findByProveedorAndDiaTodos(proveedorId, fecha);
+
+    const resultados: AgendaTurnoDto[] = [];
+
+    for (const turno of turnos) {
+      const [cliente, servicio] = await Promise.all([
+        this.getClienteInfo(turno),
+        this.servicioAdapter.getInfo(turno.getServicioId()),
+      ]);
+
+      resultados.push({
+        turnoId: turno.getId()!,
+        fecha: turno.getFecha(),
+        horaInicio: turno.getHoraInicio(),
+        estado: turno.getEstado(),
+        clienteNombre: cliente.nombre,
+        servicioNombre: servicio?.nombre ?? 'Servicio',
+        precio: servicio?.precio ?? 0,
+      });
+    }
+
+    return resultados;
   }
 
 }
