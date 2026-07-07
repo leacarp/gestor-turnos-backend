@@ -21,4 +21,10 @@ export const EnvConfiguration = () => ({
     failureUrl: process.env.FRONTEND_FAILURE_URL || 'http://localhost:3000/pagos/error',
     pendingUrl: process.env.FRONTEND_PENDING_URL || 'http://localhost:3000/pagos/pendiente',
   },
+
+  n8n: {
+    sharedSecret: process.env.N8N_SHARED_SECRET,
+    webhookTurnoCreado: process.env.N8N_WEBHOOK_TURNO_CREADO,
+    webhookCancelacionDia: process.env.N8N_WEBHOOK_CANCELACION_DIA,
+  },
 });

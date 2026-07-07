@@ -45,6 +45,12 @@ export class Turno {
   @Prop()
   clienteCelular?: string;
 
+  @Prop({ default: false })
+  recordatorio12hEnviado: boolean;
+
+  @Prop({ default: false })
+  recordatorio3hEnviado: boolean;
+
   createdAt?: Date;
   updatedAt?: Date;
 }

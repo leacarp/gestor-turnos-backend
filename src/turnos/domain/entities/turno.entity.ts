@@ -14,7 +14,9 @@ export class TurnoEntity {
   private readonly _createdAt?: Date;
   private readonly _updatedAt?: Date;
   private readonly _cliente: ClienteEntity;
- 
+  private readonly _recordatorio12hEnviado: boolean;
+  private readonly _recordatorio3hEnviado: boolean;
+
 
   constructor(
     props: {
@@ -29,6 +31,8 @@ export class TurnoEntity {
     createdAt?: Date;
     updatedAt?: Date;
     id?: string;
+    recordatorio12hEnviado?: boolean;
+    recordatorio3hEnviado?: boolean;
   }
   ) {
     this._fecha = props.fecha;
@@ -42,6 +46,8 @@ export class TurnoEntity {
     this._createdAt = props.createdAt || new Date();
     this._updatedAt = props.updatedAt || new Date();
     this._id = props.id;
+    this._recordatorio12hEnviado = props.recordatorio12hEnviado ?? false;
+    this._recordatorio3hEnviado = props.recordatorio3hEnviado ?? false;
   }
 
   getId(): string | undefined {
@@ -86,6 +92,14 @@ export class TurnoEntity {
 
   getUpdatedAt(): Date | undefined {
     return this._updatedAt;
+  }
+
+  getRecordatorio12hEnviado(): boolean {
+    return this._recordatorio12hEnviado;
+  }
+
+  getRecordatorio3hEnviado(): boolean {
+    return this._recordatorio3hEnviado;
   }
 
   static createForRegistered(dto: CreateTurnoServiceDto, id: string): TurnoEntity {

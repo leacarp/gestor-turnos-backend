@@ -4,18 +4,22 @@ import { UpdateUserDtoService } from 'src/user/services/dto/user-dto.request/upd
 import { UpdateProviderDataDtoRequest } from './update-providerData.dto';
 import type { ReminderSettingsEntity } from 'src/user/domain/entities/user.entity';
 
-export class ReminderChannelWhatsappDto {
+export class ReminderChannelTelegramDto {
     @IsOptional()
     @IsBoolean()
     enabled?: boolean;
 
     @IsOptional()
     @IsBoolean()
-    t24h?: boolean;
+    t12h?: boolean;
 
     @IsOptional()
     @IsBoolean()
-    t2h?: boolean;
+    t3h?: boolean;
+
+    @IsOptional()
+    @IsString()
+    chatId?: string;
 }
 
 export class ReminderChannelEmailDto {
@@ -25,14 +29,14 @@ export class ReminderChannelEmailDto {
 
     @IsOptional()
     @IsBoolean()
-    t24h?: boolean;
+    t12h?: boolean;
 }
 
 export class ReminderSettingsDtoRequest {
     @IsOptional()
     @ValidateNested()
-    @Type(() => ReminderChannelWhatsappDto)
-    whatsapp?: ReminderChannelWhatsappDto;
+    @Type(() => ReminderChannelTelegramDto)
+    telegram?: ReminderChannelTelegramDto;
 
     @IsOptional()
     @ValidateNested()
@@ -45,14 +49,15 @@ export class ReminderSettingsDtoRequest {
 
     toEntity(): ReminderSettingsEntity {
         return {
-            whatsapp: {
-                enabled: this.whatsapp?.enabled ?? false,
-                t24h: this.whatsapp?.t24h ?? false,
-                t2h: this.whatsapp?.t2h ?? false,
+            telegram: {
+                enabled: this.telegram?.enabled ?? false,
+                t12h: this.telegram?.t12h ?? false,
+                t3h: this.telegram?.t3h ?? false,
+                chatId: this.telegram?.chatId,
             },
             email: {
                 enabled: this.email?.enabled ?? false,
-                t24h: this.email?.t24h ?? false,
+                t12h: this.email?.t12h ?? false,
             },
             messageTemplate: this.messageTemplate ?? '',
         };

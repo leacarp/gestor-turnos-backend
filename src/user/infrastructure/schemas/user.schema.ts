@@ -4,19 +4,20 @@ import { ProviderData, ProviderDataSchema } from './providerData.schema';
 
 export type UserDocument = User & Document;
 
-export class ReminderSettingsWhatsapp {
+export class ReminderSettingsTelegram {
     enabled: boolean;
-    t24h: boolean;
-    t2h: boolean;
+    t12h: boolean;
+    t3h: boolean;
+    chatId?: string;
 }
 
 export class ReminderSettingsEmail {
     enabled: boolean;
-    t24h: boolean;
+    t12h: boolean;
 }
 
 export class ReminderSettings {
-    whatsapp: ReminderSettingsWhatsapp;
+    telegram: ReminderSettingsTelegram;
     email: ReminderSettingsEmail;
     messageTemplate: string;
 }
@@ -47,8 +48,8 @@ export class User{
 
     @Prop({
         type: {
-            whatsapp: { enabled: Boolean, t24h: Boolean, t2h: Boolean },
-            email: { enabled: Boolean, t24h: Boolean },
+            telegram: { enabled: Boolean, t12h: Boolean, t3h: Boolean, chatId: String },
+            email: { enabled: Boolean, t12h: Boolean },
             messageTemplate: String,
         },
         required: false,

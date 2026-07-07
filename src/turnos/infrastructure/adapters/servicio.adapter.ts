@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import type { IServicioAdapter } from '../../domain/interfaces/servicio-adapter.interface.js';
+import type { IServicioAdapter, ServicioInfo } from '../../domain/interfaces/servicio-adapter.interface.js';
 import type { IServicioService } from '../../../servicios/domain/interfaces/servicio-service.interface.js';
 import { SERVICIO_SERVICE } from '../../../servicios/infrastructure/constants/injection-tokens.js';
 
@@ -35,6 +35,15 @@ export class ServicioAdapter implements IServicioAdapter {
       return servicio.getRequiereSeña();
     } catch {
       return false;
+    }
+  }
+
+  async getInfo(servicioId: string): Promise<ServicioInfo | null> {
+    try {
+      const servicio = await this.servicioService.findById(servicioId);
+      return { nombre: servicio.getNombre(), precio: servicio.getPrecio() };
+    } catch {
+      return null;
     }
   }
 }

@@ -91,6 +91,22 @@ export class TurnoRepository implements ITurnoRepository {
     return turnos.map((t) => this.toEntity(t));
   }
 
+  async findByProveedorAndDiaTodos(proveedorId: string, fecha: Date): Promise<TurnoEntity[]> {
+    const y = fecha.getFullYear();
+    const m = fecha.getMonth();
+    const d = fecha.getDate();
+
+    const startOfDay = new Date(y, m, d, 0, 0, 0, 0);
+    const endOfDay = new Date(y, m, d, 23, 59, 59, 999);
+
+    const turnos = await this.turnoModel.find({
+      proveedorId: new Types.ObjectId(proveedorId),
+      fecha: { $gte: startOfDay, $lte: endOfDay },
+    });
+
+    return turnos.map((t) => this.toEntity(t));
+  }
+
   async update(
     id: string,
     data: { fecha?: Date; horaInicio?: string; estado?: string; notas?: string },
@@ -123,6 +139,67 @@ export class TurnoRepository implements ITurnoRepository {
     }
   }
 
+  async findPendientesRecordatorio(
+    ventanaInicio: Date,
+    ventanaFin: Date,
+    campoFlag: 'recordatorio12hEnviado' | 'recordatorio3hEnviado',
+  ): Promise<TurnoEntity[]> {
+    // Traemos candidatos por rango de día (Mongo no puede combinar fecha + horaInicio en una sola query)
+    // y filtramos la ventana exacta fecha+hora en memoria.
+    const diaInicio = new Date(ventanaInicio.getFullYear(), ventanaInicio.getMonth(), ventanaInicio.getDate());
+    const diaFin = new Date(ventanaFin.getFullYear(), ventanaFin.getMonth(), ventanaFin.getDate(), 23, 59, 59, 999);
+
+    const candidatos = await this.turnoModel.find({
+      estado: 'confirmado',
+      [campoFlag]: false,
+      fecha: { $gte: diaInicio, $lte: diaFin },
+    });
+
+    const enVentana = candidatos.filter((doc) => {
+      const [h, m] = doc.horaInicio.split(':').map(Number);
+      const fechaHora = new Date(doc.fecha.getFullYear(), doc.fecha.getMonth(), doc.fecha.getDate(), h, m, 0, 0);
+      return fechaHora >= ventanaInicio && fechaHora <= ventanaFin;
+    });
+
+    return enVentana.map((t) => this.toEntity(t));
+  }
+
+  async marcarRecordatorioEnviado(
+    id: string,
+    campoFlag: 'recordatorio12hEnviado' | 'recordatorio3hEnviado',
+  ): Promise<void> {
+    const result = await this.turnoModel.findByIdAndUpdate(id, { [campoFlag]: true });
+
+    if (!result) {
+      throw new NotFoundException('Turno no encontrado');
+    }
+  }
+
+  async cancelarTurnosDelDia(proveedorId: string, fecha: Date): Promise<TurnoEntity[]> {
+    const y = fecha.getFullYear();
+    const m = fecha.getMonth();
+    const d = fecha.getDate();
+
+    const startOfDay = new Date(y, m, d, 0, 0, 0, 0);
+    const endOfDay = new Date(y, m, d, 23, 59, 59, 999);
+
+    const turnos = await this.turnoModel.find({
+      proveedorId: new Types.ObjectId(proveedorId),
+      fecha: { $gte: startOfDay, $lte: endOfDay },
+      estado: { $in: ['pendiente', 'confirmado'] },
+    });
+
+    await this.turnoModel.updateMany(
+      { _id: { $in: turnos.map((t) => t._id) } },
+      { estado: 'cancelado' },
+    );
+
+    return turnos.map((t) => {
+      t.estado = 'cancelado';
+      return this.toEntity(t);
+    });
+  }
+
   private toEntity(doc: TurnoDocument): TurnoEntity {
 
   let cliente: ClienteEntity;
@@ -148,6 +225,8 @@ export class TurnoRepository implements ITurnoRepository {
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
       id: doc._id.toString(),
+      recordatorio12hEnviado: doc.recordatorio12hEnviado,
+      recordatorio3hEnviado: doc.recordatorio3hEnviado,
   });
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import type { IUserAdapter } from '../../domain/interfaces/user-adapter.interface.js';
+import type { IUserAdapter, UserContactInfo } from '../../domain/interfaces/user-adapter.interface.js';
 import type { IUserRepository } from '../../../user/domain/interfaces/IUserRepository.js';
 import { USER_REPOSITORY } from '../../../user/infrastructure/constants/user-repository.constants.js';
 
@@ -21,5 +21,19 @@ export class UserAdapter implements IUserAdapter {
     const user = await this.userRepository.findById(id);
 
     return user !== null && user.getRole() === 'client';
+  }
+
+  async getContactInfo(id: string): Promise<UserContactInfo | null> {
+    const user = await this.userRepository.findById(id);
+
+    if (!user) {
+      return null;
+    }
+
+    return {
+      nombre: user.getName(),
+      email: user.getEmail(),
+      reminderSettings: user.getReminderSettings(),
+    };
   }
 }
