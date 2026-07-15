@@ -29,10 +29,7 @@ export class PagoController {
   }
 
   @Get('referencia/:ref')
-  async getByReferencia(
-    @Param('ref') ref: string,
-    @CurrentUser() user: { id: string; role: string },
-  ) {
+  async getByReferencia(@Param('ref') ref: string, @CurrentUser() user: { id: string; role: string }) {
     const pago = await this.pagoService.findByExternalReference(ref);
     if (!pago) {
       throw new NotFoundException('Pago no encontrado');
@@ -44,10 +41,7 @@ export class PagoController {
   }
 
   @Get(':id')
-  async getById(
-    @Param('id') id: string,
-    @CurrentUser() user: { id: string; role: string },
-  ) {
+  async getById(@Param('id') id: string, @CurrentUser() user: { id: string; role: string }) {
     const pago = await this.pagoService.findById(id);
     if (!pago) {
       throw new NotFoundException('Pago no encontrado');

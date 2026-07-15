@@ -16,6 +16,7 @@ import { MercadoPagoService } from './mercadopago.service.js';
 import { CreatePreferenceRequestDto } from './dtos/create-preference-request.dto.js';
 import { JwtAuthGuard } from '../auth/infrastructure/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../auth/presentation/decorators/current-user.decorator.js';
+import { WebhookSignatureGuard } from './guards/webhook-signature.guard.js';
 
 @Controller('mercadopago')
 export class MercadoPagoController {
@@ -57,6 +58,7 @@ export class MercadoPagoController {
    */
   @Post('webhook')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(WebhookSignatureGuard)
   async webhook(@Req() req: Request, @Res() res: Response) {
     const { type, data } = req.body as { type: string; data: { id: string } };
 
