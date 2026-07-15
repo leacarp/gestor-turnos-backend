@@ -102,7 +102,7 @@ export class TurnoEntity {
     return this._recordatorio3hEnviado;
   }
 
-  static createForRegistered(dto: CreateTurnoServiceDto, id: string): TurnoEntity {
+  static createForRegistered(dto: CreateTurnoServiceDto, id: string, pagoId?: string): TurnoEntity {
     const cliente = ClienteEntity.createRegistered(id);
   
     return new TurnoEntity({
@@ -112,7 +112,8 @@ export class TurnoEntity {
     proveedorId: dto.getProveedorId(),
     servicioId: dto.getServicioId(),
     cliente: cliente,
-    notas: dto.getNotas()
+    notas: dto.getNotas(),
+    pagoId
     })
   }
 
@@ -131,5 +132,28 @@ export class TurnoEntity {
     cliente: cliente,
     notas: dto.getNotas()
   })
+  }
+
+  static createFromPayment(data: {
+    fecha: Date;
+    horaInicio: string;
+    proveedorId: string;
+    servicioId: string;
+    clienteId: string;
+    notas?: string;
+    pagoId: string;
+  }): TurnoEntity {
+    const cliente = ClienteEntity.createRegistered(data.clienteId);
+  
+    return new TurnoEntity({
+      fecha: new Date(data.fecha),
+      horaInicio: data.horaInicio,
+      estado: 'pendiente',
+      proveedorId: data.proveedorId,
+      servicioId: data.servicioId,
+      cliente: cliente,
+      notas: data.notas,
+      pagoId: data.pagoId
+    });
   }
 }

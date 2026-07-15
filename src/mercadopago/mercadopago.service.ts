@@ -166,15 +166,15 @@ export class MercadoPagoService {
     });
 
     
-    /* await this.turnoService.createFromPago(
-      new Date(metadata.fecha),
-      metadata.hora_inicio,
-      metadata.proveedor_id,
-      metadata.servicio_id,
-      metadata.cliente_id,
-      pago.getId()!,
-      metadata.notas
-    ); */
+    await this.turnoService.createFromPago({
+      fecha: new Date(metadata.fecha),
+      horaInicio: metadata.hora_inicio,
+      proveedorId: metadata.proveedor_id,
+      servicioId: metadata.servicio_id,
+      clienteId: metadata.cliente_id,
+      notas: metadata.notas,
+      pagoId: pago.getId()!
+    });
 
     this.logger.log(`Turno creado desde pago MP ${paymentId} (ref: ${externalReference})`);
   }

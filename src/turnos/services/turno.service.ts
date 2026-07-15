@@ -25,7 +25,7 @@ import {
 } from '../infrastructure/constants/injection-tokens.js';
 import { CreateTurnoGuestServiceDto } from './dto/create-turno-guest-service.dto.js';
 import { CreateTurnoServiceDto } from './dto/create-turno-service.dto.js';
-import { Turno } from '../infrastructure/schemas/turno.schema.js';
+import { CreateTurnoPagoData } from '../domain/interfaces/turno-service.interface.js';
 
 const RECORDATORIO_TOLERANCIA_MS = 20 * 60 * 1000;
 
@@ -85,10 +85,12 @@ export class TurnoService implements ITurnoService {
     return creado;
   }
 
-  async createFromPago(dto: CreateTurnoServiceDto): Promise<TurnoEntity> {
+  async createFromPago(data: CreateTurnoPagoData): Promise<TurnoEntity> {
 
-    const turno = TurnoEntity.createForRegistered(dto, dto.getCliente().getId() || 'ID desconocido');
-    return this.turnoRepository.create(turno);
+    const turno = TurnoEntity.createFromPayment(data);
+    const creado = this.turnoRepository.create(turno);
+    await this.notificarTurnoCreado(await creado);
+    return creado;
   }
 
   async findById(id: string): Promise<TurnoEntity> {

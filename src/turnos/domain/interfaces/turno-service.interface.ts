@@ -37,6 +37,16 @@ export interface AgendaTurnoDto {
   precio: number;
 }
 
+export interface CreateTurnoPagoData {
+  fecha: Date;
+  horaInicio: string;
+  proveedorId: string;
+  servicioId: string;
+  clienteId: string;
+  notas?: string;
+  pagoId: string;
+}
+
 export interface ITurnoService {
   create(dto: CreateTurnoServiceDto, userId: string): Promise<TurnoEntity>;
 
@@ -61,7 +71,7 @@ export interface ITurnoService {
 
   delete(id: string, userId: string, userRole: string): Promise<void>;
 
-  createFromPago(dto: CreateTurnoServiceDto): Promise<TurnoEntity>;
+  createFromPago(data: CreateTurnoPagoData): Promise<TurnoEntity>;
 
   getRecordatorios(ventana: '12h' | '3h'): Promise<RecordatorioTurnoDto[]>;
 
