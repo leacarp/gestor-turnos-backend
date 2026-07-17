@@ -54,7 +54,7 @@ export class PagoResponseDto {
       entity.getMpStatus(),
       entity.getMpStatusDetail(),
       entity.getProveedorId(),
-      entity.getClienteId(),
+      entity.getClienteId() || "ID Desconocido",
       entity.getServicioId(),
       entity.getCreatedAt()!,
     );

@@ -9,8 +9,10 @@ export interface ICreatePagoData {
   mpStatusDetail: string;
   mpExternalReference: string;
   proveedorId: string;
-  clienteId: string;
+  clienteId?: string;
+  guestEmail?: string;
   servicioId: string;
+  estado?: string;
 }
 
 export interface IPagoService {

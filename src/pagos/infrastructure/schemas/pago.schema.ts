@@ -36,8 +36,11 @@ export class Pago {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   proveedorId: Types.ObjectId;
 
-  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-  clienteId: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, ref: 'User', required: false })
+  clienteId?: Types.ObjectId;
+
+  @Prop({ required: false })
+  guestEmail?: string;
 
   @Prop({ type: Types.ObjectId, ref: 'Servicio', required: true })
   servicioId: Types.ObjectId;

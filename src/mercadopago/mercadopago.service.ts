@@ -13,13 +13,17 @@ import { USER_SERVICE } from '../user/infrastructure/constants/user-service.cons
 
 export interface TurnoMetadata {
   proveedor_id: string;
-  cliente_id: string;
+  cliente_id?: string;
   servicio_id: string;
   fecha: string;
   hora_inicio: string;
   notas?: string;
   monto_total: number;
   porcentaje_sena: number;
+  is_guest?: boolean;
+  guest_nombre?: string;
+  guest_email?: string;
+  guest_celular?: string;
 }
 
 @Injectable()
@@ -112,6 +116,81 @@ export class MercadoPagoService {
     };
   }
 
+  async createGuestPreference(
+    proveedorId: string,
+    servicioId: string,
+    guestDetails: { nombre: string; email: string; celular?: string },
+    fecha: string,
+    horaInicio: string,
+    notas?: string,
+  ): Promise<{ initPoint: string; preferenceId: string; externalReference: string; montoSeña: number }> {
+    const servicio = await this.servicioService.findById(servicioId);
+
+    if (!servicio.getRequiereSeña()) {
+      throw new BadRequestException('Este servicio no requiere seña. Creá el turno directamente en /turnos');
+    }
+
+    if (servicio.getProveedorId() !== proveedorId) {
+      throw new BadRequestException('El servicio no pertenece al proveedor indicado');
+    }
+
+    const montoSeña = servicio.calcularMontoSeña();
+    
+    if (!montoSeña || montoSeña <= 0) {
+      throw new BadRequestException('El monto de la seña debe ser mayor a 0 para generar la preferencia de pago');
+    }
+
+    const externalReference = randomUUID();
+    const accessToken = await this.resolveAccessToken(proveedorId);
+    const client = new MercadoPagoConfig({ accessToken });
+    const preferenceClient = new Preference(client);
+
+    const metadata: TurnoMetadata = {
+      proveedor_id: proveedorId,
+      servicio_id: servicioId,
+      fecha,
+      hora_inicio: horaInicio,
+      notas,
+      monto_total: servicio.getPrecio(),
+      porcentaje_sena: 0,
+      is_guest: true,
+      guest_nombre: guestDetails.nombre,
+      guest_email: guestDetails.email,
+      guest_celular: guestDetails.celular,
+    };
+
+    const backUrls = this.getFrontendBackUrls();
+    const frontendUrl = this.configService.get<string>('frontend.url') ?? 'http://localhost:3000';
+    const isPublicUrl = !frontendUrl.includes('localhost') && !frontendUrl.includes('127.0.0.1');
+
+    const body = {
+      items: [
+        {
+          id: servicioId,
+          title: `Seña - ${servicio.getNombre()}`,
+          quantity: 1,
+          unit_price: montoSeña,
+          currency_id: 'ARS',
+          description: `Seña fija de $${montoSeña} para reservar el turno (Invitado)`,
+        },
+      ],
+      back_urls: backUrls,
+      ...(isPublicUrl ? { auto_return: 'approved' as const } : {}),
+      external_reference: externalReference,
+      notification_url: `${this.configService.get<string>('mercadoPago.webhookUrl')}?source_news=webhooks`,
+      metadata,
+    };
+
+    const response = await preferenceClient.create({ body });
+
+    return {
+      initPoint: response.init_point!,
+      preferenceId: response.id!,
+      externalReference,
+      montoSeña,
+    };
+  }
+
   async processWebhook(paymentId: string): Promise<void> {
     const accessToken = this.configService.get<string>('mercadoPago.accessToken');
 
@@ -157,29 +236,51 @@ export class MercadoPagoService {
       return;
     }
 
+    if (!metadata.is_guest && !metadata.cliente_id) {
+      this.logger.warn(`Pago ${paymentId} sin cliente_id (no es invitado)`);
+      return;
+    }
+
     const pago = await this.pagoService.create({
-      monto: payment.transaction_amount ?? 0,
+      proveedorId: metadata.proveedor_id,
+      clienteId: metadata.cliente_id,
+      servicioId: metadata.servicio_id,
+      monto: payment.transaction_amount!,
       montoTotal: metadata.monto_total,
       porcentajeSeña: metadata.porcentaje_sena,
-      mpPaymentId: String(paymentId),
-      mpStatus: payment.status,
-      mpStatusDetail: payment.status_detail ?? '',
+      estado: 'aprobado',
+      mpPaymentId: String(payment.id),
+      mpStatus: payment.status!,
+      mpStatusDetail: payment.status_detail!,
       mpExternalReference: externalReference,
-      proveedorId: metadata.proveedor_id,
-      clienteId: metadata.cliente_id,
-      servicioId: metadata.servicio_id,
+      guestEmail: metadata.guest_email,
     });
 
-    
-    await this.turnoService.createFromPago({
-      fecha: new Date(metadata.fecha),
-      horaInicio: metadata.hora_inicio,
-      proveedorId: metadata.proveedor_id,
-      servicioId: metadata.servicio_id,
-      clienteId: metadata.cliente_id,
-      notas: metadata.notas,
-      pagoId: pago.getId()!
-    });
+    if (metadata.is_guest && metadata.guest_nombre && metadata.guest_email) {
+      await this.turnoService.createGuestFromPago({
+        proveedorId: metadata.proveedor_id,
+        servicioId: metadata.servicio_id,
+        fecha: new Date(metadata.fecha),
+        horaInicio: metadata.hora_inicio,
+        notas: metadata.notas,
+        pagoId: pago.getId()!,
+        guestDetails: {
+          nombre: metadata.guest_nombre,
+          email: metadata.guest_email,
+          celular: metadata.guest_celular,
+        },
+      });
+    } else if (metadata.cliente_id) {
+      await this.turnoService.createFromPago({
+        proveedorId: metadata.proveedor_id,
+        clienteId: metadata.cliente_id,
+        servicioId: metadata.servicio_id,
+        fecha: new Date(metadata.fecha),
+        horaInicio: metadata.hora_inicio,
+        notas: metadata.notas,
+        pagoId: pago.getId()!,
+      });
+    }
 
     this.logger.log(`Turno creado desde pago MP ${paymentId} (ref: ${externalReference})`);
   }

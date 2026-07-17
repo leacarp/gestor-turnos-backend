@@ -156,4 +156,31 @@ export class TurnoEntity {
       pagoId: data.pagoId
     });
   }
+
+  static createGuestFromPayment(data: {
+    fecha: Date;
+    horaInicio: string;
+    proveedorId: string;
+    servicioId: string;
+    guestDetails: { nombre: string; email: string; celular?: string };
+    notas?: string;
+    pagoId: string;
+  }): TurnoEntity {
+    const cliente = ClienteEntity.createGuest(
+      data.guestDetails.nombre,
+      data.guestDetails.email,
+      data.guestDetails.celular || 'Celular vacio'
+    );
+  
+    return new TurnoEntity({
+      fecha: new Date(data.fecha),
+      horaInicio: data.horaInicio,
+      estado: 'pendiente',
+      proveedorId: data.proveedorId,
+      servicioId: data.servicioId,
+      cliente: cliente,
+      notas: data.notas,
+      pagoId: data.pagoId
+    });
+  }
 }

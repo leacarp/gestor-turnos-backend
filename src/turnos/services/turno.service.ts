@@ -13,6 +13,8 @@ import type {
   RecordatorioTurnoDto,
   TurnoCanceladoDto,
   AgendaTurnoDto,
+  CreateTurnoPagoData,
+  CreateTurnoGuestPagoData
 } from '../domain/interfaces/turno-service.interface.js';
 import type { ITurnoRepository } from '../domain/interfaces/turno-repository.interface.js';
 import type { IUserAdapter } from '../domain/interfaces/user-adapter.interface.js';
@@ -25,7 +27,6 @@ import {
 } from '../infrastructure/constants/injection-tokens.js';
 import { CreateTurnoGuestServiceDto } from './dto/create-turno-guest-service.dto.js';
 import { CreateTurnoServiceDto } from './dto/create-turno-service.dto.js';
-import { CreateTurnoPagoData } from '../domain/interfaces/turno-service.interface.js';
 
 const RECORDATORIO_TOLERANCIA_MS = 20 * 60 * 1000;
 
@@ -86,10 +87,16 @@ export class TurnoService implements ITurnoService {
   }
 
   async createFromPago(data: CreateTurnoPagoData): Promise<TurnoEntity> {
-
     const turno = TurnoEntity.createFromPayment(data);
     const creado = this.turnoRepository.create(turno);
     await this.notificarTurnoCreado(await creado);
+    return creado;
+  }
+
+  async createGuestFromPago(data: CreateTurnoGuestPagoData): Promise<TurnoEntity> {
+    const turno = TurnoEntity.createGuestFromPayment(data);
+    const creado = await this.turnoRepository.create(turno);
+    await this.notificarTurnoCreado(creado);
     return creado;
   }
 

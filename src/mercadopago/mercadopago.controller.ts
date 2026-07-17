@@ -17,12 +17,36 @@ import { CreatePreferenceRequestDto } from './dtos/create-preference-request.dto
 import { JwtAuthGuard } from '../auth/infrastructure/guards/jwt-auth.guard.js';
 import { CurrentUser } from '../auth/presentation/decorators/current-user.decorator.js';
 import { WebhookSignatureGuard } from './guards/webhook-signature.guard.js';
+import { CreateGuestPreferenceRequestDto } from './dtos/create-guest-preference-request.dto.js';
 
 @Controller('mercadopago')
 export class MercadoPagoController {
   private readonly logger = new Logger(MercadoPagoController.name);
 
   constructor(private readonly mercadoPagoService: MercadoPagoService) {}
+
+  /**
+   * Crea una preferencia de pago de seña para un turno como invitado.
+   * NO requiere autenticación. Devuelve la URL de pago de Mercado Pago.
+   */
+  @Post('guest-preference')
+  async createGuestPreference(@Body() dto: CreateGuestPreferenceRequestDto) {
+    const result = await this.mercadoPagoService.createGuestPreference(
+      dto.proveedorId,
+      dto.servicioId,
+      dto.guestDetails,
+      dto.fecha,
+      dto.horaInicio,
+      dto.notas,
+    );
+
+    return {
+      initPoint: result.initPoint,
+      preferenceId: result.preferenceId,
+      externalReference: result.externalReference,
+      montoSeña: result.montoSeña,
+    };
+  }
 
   /**
    * Crea una preferencia de pago de seña para un turno.
