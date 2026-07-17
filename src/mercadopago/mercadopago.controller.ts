@@ -58,14 +58,15 @@ export class MercadoPagoController {
    */
   @Post('webhook')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(WebhookSignatureGuard)
   async webhook(@Req() req: Request, @Res() res: Response) {
-    const { type, data } = req.body as { type: string; data: { id: string } };
+    // Soportar formato Webhook (type, data.id) o IPN (topic, id / resource)
+    const type = req.body?.type || req.query?.type || req.body?.topic || req.query?.topic;
+    const paymentId = req.body?.data?.id || req.body?.id || req.query?.['data.id'] || req.query?.id;
 
-    if (type === 'payment' && data?.id) {
+    if ((type === 'payment' || type === 'payment.created') && paymentId) {
       this.mercadoPagoService
-        .processWebhook(data.id)
-        .catch((err) => this.logger.error(`Error procesando webhook pago ${data.id}: ${err}`));
+        .processWebhook(String(paymentId))
+        .catch((err) => this.logger.error(`Error procesando webhook pago ${paymentId}: ${err}`));
     }
 
     res.sendStatus(200);

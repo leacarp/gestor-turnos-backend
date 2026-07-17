@@ -57,6 +57,11 @@ export class MercadoPagoService {
     }
 
     const montoSeña = servicio.calcularMontoSeña();
+    
+    if (!montoSeña || montoSeña <= 0) {
+      throw new BadRequestException('El monto de la seña debe ser mayor a 0 para generar la preferencia de pago');
+    }
+
     const externalReference = randomUUID();
 
     const accessToken = await this.resolveAccessToken(proveedorId);
@@ -93,7 +98,7 @@ export class MercadoPagoService {
       back_urls: backUrls,
       ...(isPublicUrl ? { auto_return: 'approved' as const } : {}),
       external_reference: externalReference,
-      notification_url: this.configService.get<string>('mercadoPago.webhookUrl'),
+      notification_url: `${this.configService.get<string>('mercadoPago.webhookUrl')}?source_news=webhooks`,
       metadata,
     };
 
@@ -242,9 +247,18 @@ export class MercadoPagoService {
   private async resolveAccessToken(proveedorId: string): Promise<string> {
     try {
       const provider = await this.userService.findOneUser(proveedorId);
-      const mpToken = provider.getProviderData()?.getMpAccessToken();
+      const providerData = provider.getProviderData();
+      const mpToken = providerData?.getMpAccessToken();
 
       if (mpToken) {
+        // Verificar si el token está por expirar (margen de 5 minutos)
+        const expiresAt = providerData?.getMpTokenExpiresAt();
+        const refreshToken = providerData?.getMpRefreshToken();
+
+        if (expiresAt && refreshToken && expiresAt.getTime() - Date.now() < 5 * 60 * 1000) {
+          return await this.refreshOAuthToken(proveedorId, refreshToken);
+        }
+
         return mpToken;
       }
     } catch {
@@ -258,5 +272,40 @@ export class MercadoPagoService {
     }
 
     return appToken;
+  }
+
+  private async refreshOAuthToken(proveedorId: string, refreshToken: string): Promise<string> {
+    const appToken = this.configService.get<string>('mercadoPago.accessToken');
+    if (!appToken) {
+      throw new BadRequestException('No hay token de Mercado Pago configurado para refrescar');
+    }
+
+    const client = new MercadoPagoConfig({ accessToken: appToken });
+    const oauthClient = new OAuth(client);
+
+    try {
+      const response = await oauthClient.refresh({
+        body: {
+          client_secret: this.configService.get<string>('mercadoPago.clientSecret')!,
+          refresh_token: refreshToken,
+        },
+      });
+
+      await this.userService.updateMpCredentials(proveedorId, {
+        mpAccessToken: response.access_token!,
+        mpRefreshToken: response.refresh_token ?? refreshToken,
+        mpUserId: String(response.user_id),
+        mpConnected: true,
+        mpTokenExpiresAt: response.expires_in
+          ? new Date(Date.now() + response.expires_in * 1000)
+          : undefined,
+      });
+
+      this.logger.log(`Token de OAuth refrescado exitosamente para el proveedor ${proveedorId}`);
+      return response.access_token!;
+    } catch (error) {
+      this.logger.error(`Error al refrescar el token OAuth para el proveedor ${proveedorId}: ${error}`);
+      throw new BadRequestException('No se pudo refrescar el token de Mercado Pago');
+    }
   }
 }

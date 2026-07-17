@@ -40,12 +40,18 @@ export class WebhookSignatureGuard implements CanActivate {
         throw new Error('Formato de x-signature inválido');
       }
 
-      // 2. Extraer data.id del body
-      const dataId = request.body?.data?.id;
+      // 2. Extraer data.id del body o query
+      let dataId = request.body?.data?.id;
+      
       if (!dataId) {
-        // MP envuelve los webhooks con data.id o algo equivalente, pero a veces depende del evento.
-        // Retornar un error de validación para proteger el endpoint.
-        throw new Error('Falta data.id en el body');
+        this.logger.warn(`Body recibido: ${JSON.stringify(request.body)}, Query: ${JSON.stringify(request.query)}`);
+        
+        // A veces MP envía el ID directamente en el body.id o en el query dependiendo de la configuración
+        dataId = request.body?.id || request.query?.['data.id'] || request.query?.id;
+      }
+
+      if (!dataId) {
+        throw new Error('Falta data.id en el body o query');
       }
 
       // 3. Construir el manifest
@@ -63,7 +69,10 @@ export class WebhookSignatureGuard implements CanActivate {
       );
 
       if (!isValid) {
-        this.logger.warn(`Firma de webhook inválida para request-id ${xRequestId}`);
+        this.logger.warn(`Firma inválida. RequestID: ${xRequestId}`);
+        this.logger.debug(`Manifest usado: ${manifest}`);
+        this.logger.debug(`Firma recibida (v1): ${v1}`);
+        this.logger.debug(`Firma calculada: ${calculatedSignature}`);
         throw new UnauthorizedException('Firma no válida');
       }
 
