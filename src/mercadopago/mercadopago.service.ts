@@ -319,29 +319,11 @@ export class MercadoPagoService {
   }
 
   private getFrontendBackUrls(): { success: string; failure: string; pending: string } {
-    const defaults = {
-      success: 'http://localhost:3000/pagos/exito',
-      failure: 'http://localhost:3000/pagos/error',
-      pending: 'http://localhost:3000/pagos/pendiente',
-    };
-    const fromConfig = this.configService.get<{
-      successUrl?: string;
-      failureUrl?: string;
-      pendingUrl?: string;
-    }>('frontend');
+    const frontendUrl = this.configService.get<string>('frontend.url') ?? process.env.FRONTEND_URL ?? 'http://localhost:5173';
     return {
-      success:
-        fromConfig?.successUrl ??
-        process.env.FRONTEND_SUCCESS_URL ??
-        defaults.success,
-      failure:
-        fromConfig?.failureUrl ??
-        process.env.FRONTEND_FAILURE_URL ??
-        defaults.failure,
-      pending:
-        fromConfig?.pendingUrl ??
-        process.env.FRONTEND_PENDING_URL ??
-        defaults.pending,
+      success: `${frontendUrl}/pagos/exito`,
+      failure: `${frontendUrl}/pagos/error`,
+      pending: `${frontendUrl}/pagos/pendiente`,
     };
   }
 
