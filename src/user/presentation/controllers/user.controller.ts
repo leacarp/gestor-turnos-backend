@@ -112,6 +112,7 @@ export class UserController {
         entity.getProviderData()!.getSocialMediaLink().map(s =>
           new SocialMediaResponseDto(s.getPlatform(), s.getUrl())
         ),
+        entity.getProviderData()!.getMpConnected(),
       )
     : undefined;
 

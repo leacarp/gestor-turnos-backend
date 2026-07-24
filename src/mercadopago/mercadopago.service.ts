@@ -293,29 +293,51 @@ export class MercadoPagoService {
   }
 
   async handleOAuthCallback(code: string, proveedorId: string): Promise<void> {
-    const accessToken = this.configService.get<string>('mercadoPago.accessToken');
-    const client = new MercadoPagoConfig({ accessToken: accessToken! });
-    const oauthClient = new OAuth(client);
+    const appId = this.configService.get<string>('mercadoPago.appId');
+    const clientSecret = this.configService.get<string>('mercadoPago.clientSecret');
+    const redirectUri = this.configService.get<string>('mercadoPago.redirectUri');
 
-    const response = await oauthClient.create({
-      body: {
-        client_secret: this.configService.get<string>('mercadoPago.clientSecret')!,
-        code,
-        redirect_uri: this.configService.get<string>('mercadoPago.redirectUri')!,
+    this.logger.debug(`[OAuth] Iniciando token exchange para proveedor ${proveedorId}`);
+    this.logger.debug(`[OAuth] redirect_uri: ${redirectUri}`);
+    this.logger.debug(`[OAuth] client_id: ${appId}`);
+
+    // Llamada HTTP directa a la API de MP para evitar bugs del SDK con grant_type y client_id
+    const tokenResponse = await fetch('https://api.mercadopago.com/oauth/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json',
       },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: appId!,
+        client_secret: clientSecret!,
+        code,
+        redirect_uri: redirectUri!,
+      }).toString(),
     });
 
+    const data = await tokenResponse.json();
+
+    this.logger.debug(`[OAuth] Respuesta MP status: ${tokenResponse.status}`);
+    this.logger.debug(`[OAuth] Respuesta MP body: ${JSON.stringify(data)}`);
+
+    if (!tokenResponse.ok || !data.access_token) {
+      this.logger.error(`[OAuth] Error en token exchange: ${JSON.stringify(data)}`);
+      throw new Error(`Error al obtener token de MP: ${data.message ?? JSON.stringify(data)}`);
+    }
+
     await this.userService.updateMpCredentials(proveedorId, {
-      mpAccessToken: response.access_token!,
-      mpRefreshToken: response.refresh_token ?? undefined,
-      mpUserId: String(response.user_id),
+      mpAccessToken: data.access_token,
+      mpRefreshToken: data.refresh_token ?? undefined,
+      mpUserId: String(data.user_id),
       mpConnected: true,
-      mpTokenExpiresAt: response.expires_in
-        ? new Date(Date.now() + response.expires_in * 1000)
+      mpTokenExpiresAt: data.expires_in
+        ? new Date(Date.now() + data.expires_in * 1000)
         : undefined,
     });
 
-    this.logger.log(`Proveedor ${proveedorId} conectó su cuenta de Mercado Pago`);
+    this.logger.log(`[OAuth] ✅ Proveedor ${proveedorId} conectó su cuenta de Mercado Pago exitosamente`);
   }
 
   private getFrontendBackUrls(): { success: string; failure: string; pending: string } {
