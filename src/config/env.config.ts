@@ -1,7 +1,7 @@
 export const EnvConfiguration = () => ({
   environment: process.env.NODE_ENV || 'dev',
   mongoDb: process.env.MONGODB,
-  port: process.env.PORT || 3005,
+  port: process.env.PORT || 3000,
   dbName: 'gestorTurnos',
   jwtSecret: process.env.JWT_SECRET || 'default-secret-change-in-production',
 
@@ -10,7 +10,7 @@ export const EnvConfiguration = () => ({
     clientSecret: process.env.MP_CLIENT_SECRET,
     publicKey: process.env.MP_PUBLIC_KEY,
     accessToken: process.env.MP_ACCESS_TOKEN,
-    redirectUri: process.env.MP_REDIRECT_URI || 'http://localhost:3005/api/mercadopago/oauth/callback',
+    redirectUri: process.env.MP_REDIRECT_URI || 'https://caravan-coagulant-pulse.ngrok-free.dev/api/mercadopago/oauth/callback',
     webhookUrl: process.env.MP_WEBHOOK_URL,
     webhookSecret: process.env.MP_WEBHOOK_SECRET,
   },

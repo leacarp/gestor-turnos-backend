@@ -11,7 +11,8 @@ export class PagoEntity {
   private readonly _mpStatusDetail: string;
   private readonly _mpExternalReference: string;
   private readonly _proveedorId: string;
-  private readonly _clienteId: string;
+  private readonly _clienteId?: string;
+  private readonly _guestEmail?: string;
   private readonly _servicioId: string;
   private readonly _createdAt?: Date;
   private readonly _updatedAt?: Date;
@@ -26,8 +27,9 @@ export class PagoEntity {
     mpStatusDetail: string,
     mpExternalReference: string,
     proveedorId: string,
-    clienteId: string,
     servicioId: string,
+    clienteId?: string,
+    guestEmail?: string,
     createdAt?: Date,
     updatedAt?: Date,
     id?: string,
@@ -41,8 +43,9 @@ export class PagoEntity {
     this._mpStatusDetail = mpStatusDetail;
     this._mpExternalReference = mpExternalReference;
     this._proveedorId = proveedorId;
-    this._clienteId = clienteId;
     this._servicioId = servicioId;
+    this._clienteId = clienteId;
+    this._guestEmail = guestEmail;
     this._createdAt = createdAt;
     this._updatedAt = updatedAt;
     this._id = id;
@@ -58,7 +61,8 @@ export class PagoEntity {
   getMpStatusDetail(): string { return this._mpStatusDetail; }
   getMpExternalReference(): string { return this._mpExternalReference; }
   getProveedorId(): string { return this._proveedorId; }
-  getClienteId(): string { return this._clienteId; }
+  getClienteId(): string | undefined { return this._clienteId; }
+  getGuestEmail(): string | undefined { return this._guestEmail; }
   getServicioId(): string { return this._servicioId; }
   getCreatedAt(): Date | undefined { return this._createdAt; }
   getUpdatedAt(): Date | undefined { return this._updatedAt; }

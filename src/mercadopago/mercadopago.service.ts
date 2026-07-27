@@ -13,13 +13,17 @@ import { USER_SERVICE } from '../user/infrastructure/constants/user-service.cons
 
 export interface TurnoMetadata {
   proveedor_id: string;
-  cliente_id: string;
+  cliente_id?: string;
   servicio_id: string;
   fecha: string;
   hora_inicio: string;
   notas?: string;
   monto_total: number;
   porcentaje_sena: number;
+  is_guest?: boolean;
+  guest_nombre?: string;
+  guest_email?: string;
+  guest_celular?: string;
 }
 
 @Injectable()
@@ -57,6 +61,11 @@ export class MercadoPagoService {
     }
 
     const montoSeña = servicio.calcularMontoSeña();
+    
+    if (!montoSeña || montoSeña <= 0) {
+      throw new BadRequestException('El monto de la seña debe ser mayor a 0 para generar la preferencia de pago');
+    }
+
     const externalReference = randomUUID();
 
     const accessToken = await this.resolveAccessToken(proveedorId);
@@ -93,7 +102,82 @@ export class MercadoPagoService {
       back_urls: backUrls,
       ...(isPublicUrl ? { auto_return: 'approved' as const } : {}),
       external_reference: externalReference,
-      notification_url: this.configService.get<string>('mercadoPago.webhookUrl'),
+      notification_url: `${this.configService.get<string>('mercadoPago.webhookUrl')}?source_news=webhooks`,
+      metadata,
+    };
+
+    const response = await preferenceClient.create({ body });
+
+    return {
+      initPoint: response.init_point!,
+      preferenceId: response.id!,
+      externalReference,
+      montoSeña,
+    };
+  }
+
+  async createGuestPreference(
+    proveedorId: string,
+    servicioId: string,
+    guestDetails: { nombre: string; email: string; celular?: string },
+    fecha: string,
+    horaInicio: string,
+    notas?: string,
+  ): Promise<{ initPoint: string; preferenceId: string; externalReference: string; montoSeña: number }> {
+    const servicio = await this.servicioService.findById(servicioId);
+
+    if (!servicio.getRequiereSeña()) {
+      throw new BadRequestException('Este servicio no requiere seña. Creá el turno directamente en /turnos');
+    }
+
+    if (servicio.getProveedorId() !== proveedorId) {
+      throw new BadRequestException('El servicio no pertenece al proveedor indicado');
+    }
+
+    const montoSeña = servicio.calcularMontoSeña();
+    
+    if (!montoSeña || montoSeña <= 0) {
+      throw new BadRequestException('El monto de la seña debe ser mayor a 0 para generar la preferencia de pago');
+    }
+
+    const externalReference = randomUUID();
+    const accessToken = await this.resolveAccessToken(proveedorId);
+    const client = new MercadoPagoConfig({ accessToken });
+    const preferenceClient = new Preference(client);
+
+    const metadata: TurnoMetadata = {
+      proveedor_id: proveedorId,
+      servicio_id: servicioId,
+      fecha,
+      hora_inicio: horaInicio,
+      notas,
+      monto_total: servicio.getPrecio(),
+      porcentaje_sena: 0,
+      is_guest: true,
+      guest_nombre: guestDetails.nombre,
+      guest_email: guestDetails.email,
+      guest_celular: guestDetails.celular,
+    };
+
+    const backUrls = this.getFrontendBackUrls();
+    const frontendUrl = this.configService.get<string>('frontend.url') ?? 'http://localhost:3000';
+    const isPublicUrl = !frontendUrl.includes('localhost') && !frontendUrl.includes('127.0.0.1');
+
+    const body = {
+      items: [
+        {
+          id: servicioId,
+          title: `Seña - ${servicio.getNombre()}`,
+          quantity: 1,
+          unit_price: montoSeña,
+          currency_id: 'ARS',
+          description: `Seña fija de $${montoSeña} para reservar el turno (Invitado)`,
+        },
+      ],
+      back_urls: backUrls,
+      ...(isPublicUrl ? { auto_return: 'approved' as const } : {}),
+      external_reference: externalReference,
+      notification_url: `${this.configService.get<string>('mercadoPago.webhookUrl')}?source_news=webhooks`,
       metadata,
     };
 
@@ -152,29 +236,51 @@ export class MercadoPagoService {
       return;
     }
 
+    if (!metadata.is_guest && !metadata.cliente_id) {
+      this.logger.warn(`Pago ${paymentId} sin cliente_id (no es invitado)`);
+      return;
+    }
+
     const pago = await this.pagoService.create({
-      monto: payment.transaction_amount ?? 0,
-      montoTotal: metadata.monto_total,
-      porcentajeSeña: metadata.porcentaje_sena,
-      mpPaymentId: String(paymentId),
-      mpStatus: payment.status,
-      mpStatusDetail: payment.status_detail ?? '',
-      mpExternalReference: externalReference,
       proveedorId: metadata.proveedor_id,
       clienteId: metadata.cliente_id,
       servicioId: metadata.servicio_id,
+      monto: payment.transaction_amount!,
+      montoTotal: metadata.monto_total,
+      porcentajeSeña: metadata.porcentaje_sena,
+      estado: 'aprobado',
+      mpPaymentId: String(payment.id),
+      mpStatus: payment.status!,
+      mpStatusDetail: payment.status_detail!,
+      mpExternalReference: externalReference,
+      guestEmail: metadata.guest_email,
     });
 
-    
-    /* await this.turnoService.createFromPago(
-      new Date(metadata.fecha),
-      metadata.hora_inicio,
-      metadata.proveedor_id,
-      metadata.servicio_id,
-      metadata.cliente_id,
-      pago.getId()!,
-      metadata.notas
-    ); */
+    if (metadata.is_guest && metadata.guest_nombre && metadata.guest_email) {
+      await this.turnoService.createGuestFromPago({
+        proveedorId: metadata.proveedor_id,
+        servicioId: metadata.servicio_id,
+        fecha: new Date(metadata.fecha),
+        horaInicio: metadata.hora_inicio,
+        notas: metadata.notas,
+        pagoId: pago.getId()!,
+        guestDetails: {
+          nombre: metadata.guest_nombre,
+          email: metadata.guest_email,
+          celular: metadata.guest_celular,
+        },
+      });
+    } else if (metadata.cliente_id) {
+      await this.turnoService.createFromPago({
+        proveedorId: metadata.proveedor_id,
+        clienteId: metadata.cliente_id,
+        servicioId: metadata.servicio_id,
+        fecha: new Date(metadata.fecha),
+        horaInicio: metadata.hora_inicio,
+        notas: metadata.notas,
+        pagoId: pago.getId()!,
+      });
+    }
 
     this.logger.log(`Turno creado desde pago MP ${paymentId} (ref: ${externalReference})`);
   }
@@ -187,64 +293,77 @@ export class MercadoPagoService {
   }
 
   async handleOAuthCallback(code: string, proveedorId: string): Promise<void> {
-    const accessToken = this.configService.get<string>('mercadoPago.accessToken');
-    const client = new MercadoPagoConfig({ accessToken: accessToken! });
-    const oauthClient = new OAuth(client);
+    const appId = this.configService.get<string>('mercadoPago.appId');
+    const clientSecret = this.configService.get<string>('mercadoPago.clientSecret');
+    const redirectUri = this.configService.get<string>('mercadoPago.redirectUri');
 
-    const response = await oauthClient.create({
-      body: {
-        client_secret: this.configService.get<string>('mercadoPago.clientSecret')!,
-        code,
-        redirect_uri: this.configService.get<string>('mercadoPago.redirectUri')!,
+    this.logger.debug(`[OAuth] Iniciando token exchange para proveedor ${proveedorId}`);
+    this.logger.debug(`[OAuth] redirect_uri: ${redirectUri}`);
+    this.logger.debug(`[OAuth] client_id: ${appId}`);
+
+    // Llamada HTTP directa a la API de MP para evitar bugs del SDK con grant_type y client_id
+    const tokenResponse = await fetch('https://api.mercadopago.com/oauth/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json',
       },
+      body: new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: appId!,
+        client_secret: clientSecret!,
+        code,
+        redirect_uri: redirectUri!,
+      }).toString(),
     });
 
+    const data = await tokenResponse.json();
+
+    this.logger.debug(`[OAuth] Respuesta MP status: ${tokenResponse.status}`);
+    this.logger.debug(`[OAuth] Respuesta MP body: ${JSON.stringify(data)}`);
+
+    if (!tokenResponse.ok || !data.access_token) {
+      this.logger.error(`[OAuth] Error en token exchange: ${JSON.stringify(data)}`);
+      throw new Error(`Error al obtener token de MP: ${data.message ?? JSON.stringify(data)}`);
+    }
+
     await this.userService.updateMpCredentials(proveedorId, {
-      mpAccessToken: response.access_token!,
-      mpRefreshToken: response.refresh_token ?? undefined,
-      mpUserId: String(response.user_id),
+      mpAccessToken: data.access_token,
+      mpRefreshToken: data.refresh_token ?? undefined,
+      mpUserId: String(data.user_id),
       mpConnected: true,
-      mpTokenExpiresAt: response.expires_in
-        ? new Date(Date.now() + response.expires_in * 1000)
+      mpTokenExpiresAt: data.expires_in
+        ? new Date(Date.now() + data.expires_in * 1000)
         : undefined,
     });
 
-    this.logger.log(`Proveedor ${proveedorId} conectó su cuenta de Mercado Pago`);
+    this.logger.log(`[OAuth] ✅ Proveedor ${proveedorId} conectó su cuenta de Mercado Pago exitosamente`);
   }
 
   private getFrontendBackUrls(): { success: string; failure: string; pending: string } {
-    const defaults = {
-      success: 'http://localhost:3000/pagos/exito',
-      failure: 'http://localhost:3000/pagos/error',
-      pending: 'http://localhost:3000/pagos/pendiente',
-    };
-    const fromConfig = this.configService.get<{
-      successUrl?: string;
-      failureUrl?: string;
-      pendingUrl?: string;
-    }>('frontend');
+    const frontendUrl = this.configService.get<string>('frontend.url') ?? process.env.FRONTEND_URL ?? 'http://localhost:5173';
     return {
-      success:
-        fromConfig?.successUrl ??
-        process.env.FRONTEND_SUCCESS_URL ??
-        defaults.success,
-      failure:
-        fromConfig?.failureUrl ??
-        process.env.FRONTEND_FAILURE_URL ??
-        defaults.failure,
-      pending:
-        fromConfig?.pendingUrl ??
-        process.env.FRONTEND_PENDING_URL ??
-        defaults.pending,
+      success: `${frontendUrl}/pagos/exito`,
+      failure: `${frontendUrl}/pagos/error`,
+      pending: `${frontendUrl}/pagos/pendiente`,
     };
   }
 
   private async resolveAccessToken(proveedorId: string): Promise<string> {
     try {
       const provider = await this.userService.findOneUser(proveedorId);
-      const mpToken = provider.getProviderData()?.getMpAccessToken();
+      const providerData = provider.getProviderData();
+      const mpToken = providerData?.getMpAccessToken();
 
       if (mpToken) {
+        // Verificar si el token está por expirar (margen de 5 minutos)
+        const expiresAt = providerData?.getMpTokenExpiresAt();
+        const refreshToken = providerData?.getMpRefreshToken();
+
+        if (expiresAt && refreshToken && expiresAt.getTime() - Date.now() < 5 * 60 * 1000) {
+          return await this.refreshOAuthToken(proveedorId, refreshToken);
+        }
+
         return mpToken;
       }
     } catch {
@@ -258,5 +377,40 @@ export class MercadoPagoService {
     }
 
     return appToken;
+  }
+
+  private async refreshOAuthToken(proveedorId: string, refreshToken: string): Promise<string> {
+    const appToken = this.configService.get<string>('mercadoPago.accessToken');
+    if (!appToken) {
+      throw new BadRequestException('No hay token de Mercado Pago configurado para refrescar');
+    }
+
+    const client = new MercadoPagoConfig({ accessToken: appToken });
+    const oauthClient = new OAuth(client);
+
+    try {
+      const response = await oauthClient.refresh({
+        body: {
+          client_secret: this.configService.get<string>('mercadoPago.clientSecret')!,
+          refresh_token: refreshToken,
+        },
+      });
+
+      await this.userService.updateMpCredentials(proveedorId, {
+        mpAccessToken: response.access_token!,
+        mpRefreshToken: response.refresh_token ?? refreshToken,
+        mpUserId: String(response.user_id),
+        mpConnected: true,
+        mpTokenExpiresAt: response.expires_in
+          ? new Date(Date.now() + response.expires_in * 1000)
+          : undefined,
+      });
+
+      this.logger.log(`Token de OAuth refrescado exitosamente para el proveedor ${proveedorId}`);
+      return response.access_token!;
+    } catch (error) {
+      this.logger.error(`Error al refrescar el token OAuth para el proveedor ${proveedorId}: ${error}`);
+      throw new BadRequestException('No se pudo refrescar el token de Mercado Pago');
+    }
   }
 }

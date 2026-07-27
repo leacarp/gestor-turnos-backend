@@ -156,9 +156,16 @@ export class AvailabilityService implements IAvailabilityService{
       dto.getDate(),
     );
 
-    return possibleSlots.filter(slot =>
+    const availableSlots = possibleSlots.filter(slot =>
       !bookedSlots.some(booked => this.overlaps(slot, booked))
     );
+
+    if (!this.isToday(dto.getDate())) {
+      return availableSlots;
+    }
+
+    const nowMinutes = this.getCurrentTimeInMinutes();
+    return availableSlots.filter(slot => this.timeToMinutes(slot.startTime) > nowMinutes);
   }
 
   private splitSlotsByDuration(
@@ -222,6 +229,20 @@ export class AvailabilityService implements IAvailabilityService{
     const hours = Math.floor(totalMinutes / 60);
     const minutes = totalMinutes % 60;
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+  }
+
+  private isToday(date: Date): boolean {
+    const now = new Date();
+    return (
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth()    === now.getMonth()    &&
+      date.getDate()     === now.getDate()
+    );
+  }
+
+  private getCurrentTimeInMinutes(): number {
+    const now = new Date();
+    return now.getHours() * 60 + now.getMinutes();
   }
 
 

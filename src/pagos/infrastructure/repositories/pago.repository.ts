@@ -24,8 +24,9 @@ export class PagoRepository implements IPagoRepository {
       mpStatusDetail: entity.getMpStatusDetail(),
       mpExternalReference: entity.getMpExternalReference(),
       proveedorId: new Types.ObjectId(entity.getProveedorId()),
-      clienteId: new Types.ObjectId(entity.getClienteId()),
       servicioId: new Types.ObjectId(entity.getServicioId()),
+      clienteId: entity.getClienteId() ? new Types.ObjectId(entity.getClienteId()) : undefined,
+      guestEmail: entity.getGuestEmail(),
     });
 
     const saved = await pago.save();
@@ -68,8 +69,9 @@ export class PagoRepository implements IPagoRepository {
       doc.mpStatusDetail,
       doc.mpExternalReference,
       doc.proveedorId.toString(),
-      doc.clienteId.toString(),
       doc.servicioId.toString(),
+      doc.clienteId?.toString(),
+      doc.guestEmail,
       doc.createdAt,
       doc.updatedAt,
       doc._id.toString(),

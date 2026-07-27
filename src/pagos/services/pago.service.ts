@@ -23,8 +23,9 @@ export class PagoService implements IPagoService {
       data.mpStatusDetail,
       data.mpExternalReference,
       data.proveedorId,
-      data.clienteId,
       data.servicioId,
+      data.clienteId,
+      data.guestEmail,
     );
 
     return this.pagoRepository.create(entity);
