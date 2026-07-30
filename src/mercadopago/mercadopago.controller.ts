@@ -12,6 +12,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 import { MercadoPagoService } from './mercadopago.service.js';
 import { CreatePreferenceRequestDto } from './dtos/create-preference-request.dto.js';
 import { JwtAuthGuard } from '../auth/infrastructure/guards/jwt-auth.guard.js';
@@ -23,7 +24,10 @@ import { CreateGuestPreferenceRequestDto } from './dtos/create-guest-preference-
 export class MercadoPagoController {
   private readonly logger = new Logger(MercadoPagoController.name);
 
-  constructor(private readonly mercadoPagoService: MercadoPagoService) {}
+  constructor(
+    private readonly mercadoPagoService: MercadoPagoService,
+    private readonly configService: ConfigService,
+  ) {}
 
   /**
    * Crea una preferencia de pago de seña para un turno como invitado.
@@ -117,12 +121,14 @@ export class MercadoPagoController {
     @Query('state') proveedorId: string,
     @Res() res: Response,
   ) {
+    const frontendUrl = this.configService.get<string>('frontend.url');
+
     try {
       await this.mercadoPagoService.handleOAuthCallback(code, proveedorId);
-      res.redirect(`${process.env.FRONTEND_URL}/configuracion/mp-conectado`);
+      res.redirect(`${frontendUrl}/configuracion/mp-conectado`);
     } catch (err) {
       this.logger.error(`Error en OAuth callback: ${err}`);
-      res.redirect(`${process.env.FRONTEND_URL}/configuracion/mp-error`);
+      res.redirect(`${frontendUrl}/configuracion/mp-error`);
     }
   }
 }

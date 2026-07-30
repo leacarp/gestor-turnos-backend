@@ -30,6 +30,14 @@ import { CreateTurnoServiceDto } from './dto/create-turno-service.dto.js';
 
 const RECORDATORIO_TOLERANCIA_MS = 20 * 60 * 1000;
 
+// Instancia de n8n desplegada en Railway. Las env vars mandan; esto es el fallback
+// para que las automatizaciones no queden apuntando a la nada si faltan.
+const N8N_BASE_URL = 'https://primary-production-e79b2.up.railway.app';
+const N8N_WEBHOOK_TURNO_CREADO =
+  process.env.N8N_WEBHOOK_TURNO_CREADO || `${N8N_BASE_URL}/webhook/turno-creado`;
+const N8N_WEBHOOK_CANCELACION_DIA =
+  process.env.N8N_WEBHOOK_CANCELACION_DIA || `${N8N_BASE_URL}/webhook/cancelacion-dia`;
+
 @Injectable()
 export class TurnoService implements ITurnoService {
   private readonly logger = new Logger(TurnoService.name);
@@ -220,7 +228,7 @@ export class TurnoService implements ITurnoService {
       this.servicioAdapter.getInfo(turno.getServicioId()),
     ]);
 
-    this.notificarN8n(process.env.N8N_WEBHOOK_TURNO_CREADO, {
+    this.notificarN8n(N8N_WEBHOOK_TURNO_CREADO, {
       turnoId: turno.getId(),
       fecha: turno.getFecha(),
       horaInicio: turno.getHoraInicio(),
@@ -309,7 +317,7 @@ export class TurnoService implements ITurnoService {
       });
     }
 
-    this.notificarN8n(process.env.N8N_WEBHOOK_CANCELACION_DIA, { turnos: resultados });
+    this.notificarN8n(N8N_WEBHOOK_CANCELACION_DIA, { turnos: resultados });
 
     return resultados;
   }

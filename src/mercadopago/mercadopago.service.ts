@@ -85,7 +85,7 @@ export class MercadoPagoService {
 
     const backUrls = this.getFrontendBackUrls();
 
-    const frontendUrl = this.configService.get<string>('frontend.url') ?? 'http://localhost:3000';
+    const frontendUrl = this.configService.get<string>('frontend.url') ?? 'http://localhost:5173';
     const isPublicUrl = !frontendUrl.includes('localhost') && !frontendUrl.includes('127.0.0.1');
 
     const body = {
@@ -160,7 +160,7 @@ export class MercadoPagoService {
     };
 
     const backUrls = this.getFrontendBackUrls();
-    const frontendUrl = this.configService.get<string>('frontend.url') ?? 'http://localhost:3000';
+    const frontendUrl = this.configService.get<string>('frontend.url') ?? 'http://localhost:5173';
     const isPublicUrl = !frontendUrl.includes('localhost') && !frontendUrl.includes('127.0.0.1');
 
     const body = {
