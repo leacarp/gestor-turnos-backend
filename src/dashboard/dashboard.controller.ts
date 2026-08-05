@@ -131,37 +131,87 @@ export class DashboardController {
   async getClientes(@CurrentUser() user: { id: string }) {
     const proveedorId = new Types.ObjectId(user.id);
 
-    // Todos los clientes únicos que tuvieron al menos un turno con este proveedor,
-    // con la cantidad total de turnos y el último turno registrado.
+    // Todos los clientes que tuvieron al menos un turno con este proveedor, tanto
+    // registrados como invitados, con la cantidad total de turnos y el último turno.
+    //
+    // Los turnos de invitado no tienen clienteId: sus datos viven en los campos
+    // clienteNombre / clienteEmail / clienteCelular del propio turno. Por eso primero
+    // normalizamos la identidad del cliente desde ambas fuentes y recién después
+    // agrupamos, usando el email como clave de unificación.
     const clientes = await this.turnoModel.aggregate([
       { $match: { proveedorId } },
       {
-        $group: {
-          _id: '$clienteId',
-          turnosCount: { $sum: 1 },
-          ultimoTurno: { $max: '$fecha' },
-        },
-      },
-      {
         $lookup: {
           from: 'users',
-          localField: '_id',
+          localField: 'clienteId',
           foreignField: '_id',
           as: 'usuario',
         },
       },
       { $unwind: { path: '$usuario', preserveNullAndEmptyArrays: true } },
+
+      // Del turno más reciente al más antiguo: así los $first de abajo se quedan
+      // con el nombre y el teléfono más actualizados de cada cliente.
+      { $sort: { fecha: -1 } },
+
+      {
+        $addFields: {
+          _email: {
+            $toLower: {
+              $trim: {
+                input: { $ifNull: ['$usuario.email', { $ifNull: ['$clienteEmail', ''] }] },
+              },
+            },
+          },
+          _emailOriginal: { $ifNull: ['$usuario.email', { $ifNull: ['$clienteEmail', ''] }] },
+          _name: { $ifNull: ['$usuario.name', { $ifNull: ['$clienteNombre', ''] }] },
+          _phone: { $ifNull: ['$usuario.phone', { $ifNull: ['$clienteCelular', ''] }] },
+        },
+      },
+
+      // Clave de agrupación: el email normalizado. Si el turno no tiene email
+      // (dato incompleto), caemos al clienteId para no perder al cliente.
+      {
+        $addFields: {
+          _key: {
+            $cond: [
+              { $ne: ['$_email', ''] },
+              '$_email',
+              { $ifNull: [{ $toString: '$clienteId' }, null] },
+            ],
+          },
+        },
+      },
+
+      // Turnos sin ninguna identidad: no hay cliente que mostrar.
+      { $match: { _key: { $ne: null } } },
+
+      {
+        $group: {
+          _id: '$_key',
+          name: { $first: '$_name' },
+          email: { $first: '$_emailOriginal' },
+          phone: { $first: '$_phone' },
+          turnosCount: { $sum: 1 },
+          ultimoTurno: { $max: '$fecha' },
+          // Existe sólo si al menos una de sus reservas fue hecha con cuenta.
+          userId: { $max: '$usuario._id' },
+        },
+      },
+
       {
         $project: {
           _id: 0,
-          id: { $toString: '$_id' },
-          name: '$usuario.name',
-          email: '$usuario.email',
-          phone: '$usuario.phone',
+          id: { $cond: [{ $ifNull: ['$userId', false] }, { $toString: '$userId' }, '$_id'] },
+          tipo: { $cond: [{ $ifNull: ['$userId', false] }, 'REGISTRADO', 'INVITADO'] },
+          name: 1,
+          email: 1,
+          phone: 1,
           turnosCount: 1,
           ultimoTurno: 1,
         },
       },
+
       { $sort: { turnosCount: -1 } },
     ]);
 
