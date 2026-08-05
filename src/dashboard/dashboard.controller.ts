@@ -212,7 +212,10 @@ export class DashboardController {
         },
       },
 
-      { $sort: { turnosCount: -1 } },
+      // Por último turno primero: al proveedor le interesa a quién atendió
+      // recientemente, no quién acumula más visitas históricas. Ordenar por
+      // turnosCount dejaba a los clientes nuevos al final de la última página.
+      { $sort: { ultimoTurno: -1, turnosCount: -1 } },
     ]);
 
     return clientes;
