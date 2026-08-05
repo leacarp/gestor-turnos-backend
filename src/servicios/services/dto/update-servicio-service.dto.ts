@@ -3,16 +3,16 @@ export class UpdateServicioServiceDto {
   private readonly duracion?: number;
   private readonly precio?: number;
   private readonly requiereSeña?: boolean;
-  private readonly porcentajeSeña?: number;
+  private readonly montoSeña?: number;
   private readonly categoria?: string;
   private readonly description?: string;
 
-  constructor(nombre?: string, duracion?: number, precio?: number, requiereSeña?: boolean, porcentajeSeña?: number, categoria? : string, description?: string) {
+  constructor(nombre?: string, duracion?: number, precio?: number, requiereSeña?: boolean, montoSeña?: number, categoria? : string, description?: string) {
     this.nombre = nombre;
     this.duracion = duracion;
     this.precio = precio;
     this.requiereSeña = requiereSeña;
-    this.porcentajeSeña = porcentajeSeña;
+    this.montoSeña = montoSeña;
     this.categoria = categoria;
     this.description = description;
   }
@@ -33,8 +33,8 @@ export class UpdateServicioServiceDto {
     return this.requiereSeña;
   }
 
-  getPorcentajeSeña(): number | undefined {
-    return this.porcentajeSeña;
+  getMontoSeña(): number | undefined {
+    return this.montoSeña;
   }
 
   getCategoria() : string | undefined{
@@ -46,7 +46,7 @@ export class UpdateServicioServiceDto {
     duracion?: number;
     precio?: number;
     requiereSeña?: boolean;
-    porcentajeSeña?: number;
+    montoSeña?: number;
     categoria? : string;
     description?: string;
   } {
@@ -55,7 +55,7 @@ export class UpdateServicioServiceDto {
       duracion: this.duracion,
       precio: this.precio,
       requiereSeña: this.requiereSeña,
-      porcentajeSeña: this.porcentajeSeña,
+      montoSeña: this.montoSeña,
       categoria: this.categoria,
       description: this.description,
     };

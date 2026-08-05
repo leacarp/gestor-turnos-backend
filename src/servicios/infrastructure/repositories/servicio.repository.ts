@@ -56,7 +56,7 @@ export class ServicioRepository implements IServicioRepository {
 
   async update(
     id: string,
-    data: { nombre?: string; duracion?: number; precio?: number; requiereSeña?: boolean; porcentajeSeña?: number; categoria?: string; description?: string },
+    data: { nombre?: string; duracion?: number; precio?: number; requiereSeña?: boolean; montoSeña?: number; categoria?: string; description?: string },
   ): Promise<ServicioEntity | null> {
     const updateData: Record<string, unknown> = {};
 
@@ -65,6 +65,8 @@ export class ServicioRepository implements IServicioRepository {
     if (data.precio !== undefined) updateData.precio = data.precio;
     if (data.categoria !== undefined) updateData.categoria = data.categoria;
     if (data.description !== undefined) updateData.description = data.description;
+    if (data.requiereSeña !== undefined) updateData.requiereSeña = data.requiereSeña;
+    if (data.montoSeña !== undefined) updateData.montoSeña = data.montoSeña;
 
     const updated = await this.servicioModel.findByIdAndUpdate(
       id,

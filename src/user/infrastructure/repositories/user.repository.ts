@@ -162,7 +162,6 @@ export class UserRepository implements IUserRepository{
         return new ProviderDataEntity(
             providerData.address,
             providerData.serviceType,
-            providerData.minimumAdvance,
             providerData.publicInfo,
             providerData.socialMedia?.map(
                 (social: any) => new SocialMediaLinkEntity(social.platform, social.url)
@@ -178,14 +177,14 @@ export class UserRepository implements IUserRepository{
     private mapProviderDataDtoToEntity(providerData: ProviderDataEntity): {
         publicInfo?: string;
         address: string;
-        minimumAdvance?: number;
+
         serviceType: string;
         socialMedia: { platform: string; url: string }[];
     } {
         return {
             publicInfo: providerData.getPublicInfo(),
             address: providerData.getAddress(),
-            minimumAdvance: providerData.getMinimumAdvance(),
+
             serviceType: providerData.getServiceType(),
             socialMedia: providerData.getSocialMediaLink().map(social => ({
                 platform: social.getPlatform(),
@@ -244,9 +243,6 @@ export class UserRepository implements IUserRepository{
             result.address = providerData.getAddress();
         }
 
-        if (providerData.getMinimumAdvance() !== undefined) {
-            result.minimumAdvance = providerData.getMinimumAdvance();
-        }
 
         if (providerData.getServiceType()) {
             result.serviceType = providerData.getServiceType();

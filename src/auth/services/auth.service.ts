@@ -42,7 +42,7 @@ export class AuthService implements IAuthService {
         ? {
             publicInfo: providerDataDto.getPublicInfo(),
             address: providerDataDto.getAddress(),
-            minimumAdvance: providerDataDto.getMinimumAdvance(),
+
             serviceType: providerDataDto.getServiceType(),
             socialMedia: providerDataDto.getSocialMedia()?.map(s => ({
               platform: s.getPlatform(),

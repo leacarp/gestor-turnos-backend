@@ -12,9 +12,6 @@ export class UpdateProviderDataDtoRequest {
     @IsOptional()
     private readonly address?: string;
 
-    @IsNumber()
-    @IsOptional()
-    private readonly minimumAdvance?: number;
 
     @IsString()
     @IsOptional()
@@ -29,13 +26,12 @@ export class UpdateProviderDataDtoRequest {
     constructor(
         publicInfo?: string,
         address?: string,
-        minimumAdvance?: number,
         serviceType?: string,
         socialMedia?: UpdateSocialMediaDtoRequest[]
     ) {
         this.publicInfo = publicInfo;
         this.address = address;
-        this.minimumAdvance = minimumAdvance;
+
         this.serviceType = serviceType;
         this.socialMedia = socialMedia;
     }
@@ -48,9 +44,6 @@ export class UpdateProviderDataDtoRequest {
         return this.address; 
     }
 
-    getMinimumAdvance(): number | undefined { 
-        return this.minimumAdvance; 
-    }
 
     getServiceType(): string | undefined { 
         return this.serviceType; 
@@ -67,7 +60,7 @@ export class UpdateProviderDataDtoRequest {
         return new UpdateProviderDataDtoService(
             this.publicInfo,
             this.address,
-            this.minimumAdvance,
+
             this.serviceType,
             socialMediaService
         );

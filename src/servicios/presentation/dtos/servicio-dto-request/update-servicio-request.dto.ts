@@ -42,7 +42,7 @@ export class UpdateServicioRequestDto {
 
   @IsOptional()
   @IsNumber()
-  porcentajeSeña?: number;
+  montoSeña?: number;
 
   getNombre(): string | undefined {
     return this.nombre;
@@ -60,8 +60,8 @@ export class UpdateServicioRequestDto {
     return this.requiereSeña;
   }
 
-  getPorcentajeSeña(): number | undefined {
-    return this.porcentajeSeña;
+  getMontoSeña(): number | undefined {
+    return this.montoSeña;
   }
 
   getCategoria(): string | undefined {
@@ -78,7 +78,7 @@ export class UpdateServicioRequestDto {
       this.duracion,
       this.precio,
       this.requiereSeña,
-      this.porcentajeSeña,
+      this.montoSeña,
       this.categoria,
       this.description,
     );
