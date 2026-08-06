@@ -4,7 +4,7 @@ import { SocialMediaLinkEntity } from "./socialMediaLink.entity"
 export class ProviderDataEntity{
     private _publicInfo? : string;
     private _address : string;
-    private _minimumAdvance? : number;
+
     private _serviceType : string;
     private _socialMediaLink : SocialMediaLinkEntity[];
 
@@ -18,7 +18,7 @@ export class ProviderDataEntity{
     constructor (
         address : string,
         serviceType : string,
-        minimumAdvance? : number,
+
         publicInfo?: string,
         socialMediaLink?: SocialMediaLinkEntity[],
         mpConnected?: boolean,
@@ -28,7 +28,7 @@ export class ProviderDataEntity{
         mpTokenExpiresAt?: Date,
     ){
         this._address = address;
-        this._minimumAdvance = minimumAdvance;
+
         this._serviceType = serviceType;
         this._publicInfo = publicInfo;
         this._socialMediaLink = socialMediaLink ?? [];
@@ -47,9 +47,7 @@ export class ProviderDataEntity{
         return this._address;
     }
 
-    getMinimumAdvance() : number | undefined{
-        return this._minimumAdvance;
-    }
+
 
     getServiceType() : string{
         return this._serviceType;

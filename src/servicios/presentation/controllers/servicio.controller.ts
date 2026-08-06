@@ -48,7 +48,7 @@ export class ServicioController {
       serviceDto.getCategoria(),
       serviceDto.getDescription(),
       serviceDto.getRequiereSeña(),
-      serviceDto.getPorcentajeSeña(),
+      serviceDto.getMontoSeña(),
     );
     return ServicioResponseDto.fromEntity(entity);
   }

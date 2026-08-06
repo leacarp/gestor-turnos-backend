@@ -22,7 +22,6 @@ export class ProviderAdapter implements IProviderAdapter {
       id: user.getId()!,
       name: user.getName(),
       role: user.getRole(),
-      minimumAdvance: user.getProviderData()?.getMinimumAdvance(),
     };
   }
 

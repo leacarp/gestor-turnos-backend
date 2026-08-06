@@ -33,15 +33,23 @@ export class ServicioService implements IServicioService {
     categoria: string,
     description: string,
     requiereSeña: boolean = false,
-    _porcentajeSeña: number = 0,
+    montoSeña: number = 0,
   ): Promise<ServicioEntity> {
-    const provider = await this.validateProvider(proveedorId);
+    await this.validateProvider(proveedorId);
     this.validateCreateFields(nombre, description, duracion, precio, categoria);
 
-    const montoSeña = this.resolveProviderDeposit(provider.minimumAdvance, precio);
-    const shouldRequireDeposit = montoSeña > 0;
+    if (requiereSeña) {
+      if (montoSeña <= 0) {
+        throw new BadRequestException('La seña debe ser mayor a 0');
+      }
+      if (montoSeña > precio) {
+        throw new BadRequestException('La seña no puede ser mayor al precio del servicio');
+      }
+    } else {
+      montoSeña = 0;
+    }
 
-    const entity = new ServicioEntity(nombre, duracion, precio, proveedorId, shouldRequireDeposit, montoSeña, categoria, description);
+    const entity = new ServicioEntity(nombre, duracion, precio, proveedorId, requiereSeña, montoSeña, categoria, description);
 
     return this.servicioRepository.create(entity);
   }
@@ -66,7 +74,7 @@ export class ServicioService implements IServicioService {
 
   async update(
     id: string,
-    data: { nombre?: string; duracion?: number; precio?: number; categoria?: string; description?: string; requiereSeña?: boolean; porcentajeSeña?: number },
+    data: { nombre?: string; duracion?: number; precio?: number; categoria?: string; description?: string; requiereSeña?: boolean; montoSeña?: number },
     proveedorId: string,
   ): Promise<ServicioEntity> {
     const servicio = await this.findById(id);
@@ -74,8 +82,8 @@ export class ServicioService implements IServicioService {
     this.validateOwnership(servicio, proveedorId);
     this.validateUpdateFields(data);
 
-    const requiereSeña = servicio.getRequiereSeña();
-    const montoSeña = servicio.getMontoSeña();
+    const requiereSeña = data.requiereSeña ?? servicio.getRequiereSeña();
+    const montoSeña = data.montoSeña ?? servicio.getMontoSeña();
     const precio = data.precio !== undefined ? data.precio : servicio.getPrecio();
 
     if (requiereSeña) {
@@ -112,19 +120,6 @@ export class ServicioService implements IServicioService {
     }
 
     return provider;
-  }
-
-  private resolveProviderDeposit(minimumAdvance: number | undefined, precio: number): number {
-    const montoSeña = Number(minimumAdvance ?? 0);
-
-    if (!Number.isFinite(montoSeña) || montoSeña <= 0) {
-      return 0;
-    }
-    if (montoSeña > precio) {
-      throw new BadRequestException('La seña no puede ser mayor al precio del servicio');
-    }
-
-    return montoSeña;
   }
 
   private validateOwnership(
@@ -166,13 +161,17 @@ export class ServicioService implements IServicioService {
     precio?: number;
     categoria?: string;
     description?: string;
+    requiereSeña?: boolean;
+    montoSeña?: number;
   }): void {
     const hasField =
       data.nombre !== undefined ||
       data.description !== undefined ||
       data.duracion !== undefined ||
       data.precio !== undefined ||
-      data.categoria !== undefined;
+      data.categoria !== undefined ||
+      data.requiereSeña !== undefined ||
+      data.montoSeña !== undefined;
 
     if (!hasField) {
       throw new BadRequestException('Debe enviar al menos un campo para actualizar');

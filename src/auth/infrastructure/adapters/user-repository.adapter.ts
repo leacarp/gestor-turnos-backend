@@ -34,7 +34,7 @@ export class UserRepositoryAdapter implements IAuthUserAdapter {
       ? new ProviderDataDtoService(
           userData.providerData.address,
           userData.providerData.serviceType,
-          userData.providerData.minimumAdvance,
+
           userData.providerData.publicInfo,
           userData.providerData.socialMedia?.map(
             s => new SocialMediaDtoService(s.platform, s.url),

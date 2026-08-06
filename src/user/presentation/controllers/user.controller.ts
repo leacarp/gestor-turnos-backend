@@ -55,7 +55,7 @@ export class UserController {
       ? new ProviderDataResponseDto(
           entity.getProviderData()!.getAddress(),
           entity.getProviderData()!.getServiceType(),
-          entity.getProviderData()!.getMinimumAdvance(),
+
           entity.getProviderData()!.getPublicInfo(),
           entity.getProviderData()!.getSocialMediaLink().map(s =>
             new SocialMediaResponseDto(s.getPlatform(), s.getUrl())
@@ -107,7 +107,7 @@ export class UserController {
     ? new ProviderDataResponseDto(
         entity.getProviderData()!.getAddress(),
         entity.getProviderData()!.getServiceType(),
-        entity.getProviderData()!.getMinimumAdvance(),
+
         entity.getProviderData()!.getPublicInfo(),
         entity.getProviderData()!.getSocialMediaLink().map(s =>
           new SocialMediaResponseDto(s.getPlatform(), s.getUrl())

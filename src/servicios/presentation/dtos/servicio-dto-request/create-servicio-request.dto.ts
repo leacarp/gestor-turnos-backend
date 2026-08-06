@@ -37,7 +37,7 @@ export class CreateServicioRequestDto {
 
   @IsOptional()
   @IsNumber()
-  porcentajeSeña?: number;
+  montoSeña?: number;
 
   getNombre(): string {
     return this.nombre;
@@ -55,8 +55,8 @@ export class CreateServicioRequestDto {
     return this.requiereSeña;
   }
 
-  getPorcentajeSeña(): number | undefined {
-    return this.porcentajeSeña;
+  getMontoSeña(): number | undefined {
+    return this.montoSeña;
   }
 
   getCategoria(): string {
@@ -75,7 +75,7 @@ export class CreateServicioRequestDto {
       this.categoria,
       this.description,
       this.requiereSeña,
-      this.porcentajeSeña,
+      this.montoSeña,
     );
   }
 }

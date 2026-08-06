@@ -127,7 +127,6 @@ export class UserService implements IUserService {
     return new ProviderDataEntity(
       dto.getAddress(),
       dto.getServiceType(),
-      dto.getMinimumAdvance(),
       dto.getPublicInfo(),
       dto.getSocialMedia()?.map(s => new SocialMediaLinkEntity(s.getPlatform(), s.getUrl())),
     );
@@ -137,7 +136,6 @@ export class UserService implements IUserService {
     return new ProviderDataEntity(
       dto.getAddress() ?? current?.getAddress() ?? '',
       dto.getServiceType() ?? current?.getServiceType() ?? '',
-      dto.getMinimumAdvance() ? Number(dto.getMinimumAdvance()) : current?.getMinimumAdvance() ?? 0,
       dto.getPublicInfo() ?? current?.getPublicInfo(),
       dto.getSocialMedia()?.map(s => new SocialMediaLinkEntity(s.getPlatform() ?? '', s.getUrl() ?? ''))
         ?? current?.getSocialMediaLink(),
