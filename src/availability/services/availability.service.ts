@@ -231,8 +231,17 @@ export class AvailabilityService implements IAvailabilityService{
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
   }
 
-  private isToday(date: Date): boolean {
+  private getNowInArgentina(): Date {
     const now = new Date();
+    const tzString = now.toLocaleString('en-US', {
+      timeZone: 'America/Argentina/Buenos_Aires',
+      hour12: false,
+    });
+    return new Date(tzString);
+  }
+
+  private isToday(date: Date): boolean {
+    const now = this.getNowInArgentina();
     return (
       date.getFullYear() === now.getFullYear() &&
       date.getMonth()    === now.getMonth()    &&
@@ -241,7 +250,7 @@ export class AvailabilityService implements IAvailabilityService{
   }
 
   private getCurrentTimeInMinutes(): number {
-    const now = new Date();
+    const now = this.getNowInArgentina();
     return now.getHours() * 60 + now.getMinutes();
   }
 
