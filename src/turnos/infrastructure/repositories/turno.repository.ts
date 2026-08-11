@@ -150,7 +150,9 @@ export class TurnoRepository implements ITurnoRepository {
     const diaFin = new Date(ventanaFin.getFullYear(), ventanaFin.getMonth(), ventanaFin.getDate(), 23, 59, 59, 999);
 
     const candidatos = await this.turnoModel.find({
-      estado: 'confirmado',
+      // Los turnos nacen en 'pendiente' y solo pasan a 'confirmado' si el proveedor
+      // los toca a mano, así que filtrar por 'confirmado' dejaba esto siempre vacío.
+      estado: { $in: ['pendiente', 'confirmado'] },
       [campoFlag]: false,
       fecha: { $gte: diaInicio, $lte: diaFin },
     });

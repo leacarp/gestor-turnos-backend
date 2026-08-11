@@ -14,6 +14,7 @@ import { ProviderDataDtoService } from './dto/user-dto.request/providerData-serv
 import { ProviderDataEntity } from '../domain/entities/providerData.entity';
 import { SocialMediaLinkEntity } from '../domain/entities/socialMediaLink.entity';
 import { UpdateProviderDataDtoService } from './dto/user-dto.request/update-providerData-service.dto';
+import { buildDefaultReminderSettings } from '../domain/constants/reminder-defaults';
 
 @Injectable()
 export class UserService implements IUserService {
@@ -43,6 +44,11 @@ export class UserService implements IUserService {
     const hashedPassword = await this.hashPassword(dto.getPassword());    
     const providerData = dto.getProviderData() ? this.mapProviderDataDtoToEntity(dto.getProviderData()!) : undefined;
 
+    // Los proveedores arrancan con los recordatorios de Telegram activos para que
+    // la automatización funcione sin que tengan que configurar nada.
+    const reminderSettings =
+      dto.getRole() === 'provider' ? buildDefaultReminderSettings() : undefined;
+
     const user = new UserEntity(
       dto.getName(),
       dto.getEmail(),
@@ -53,6 +59,9 @@ export class UserService implements IUserService {
       [],
       new Date(),
       new Date(),
+      undefined,
+      true,
+      reminderSettings,
     );
 
     return this.userRepository.save(user);
