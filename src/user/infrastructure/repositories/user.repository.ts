@@ -6,6 +6,7 @@ import {User as UserSchema, UserDocument} from '../schemas/user.schema';
 import { UserEntity } from 'src/user/domain/entities/user.entity';
 import { ProviderDataEntity } from 'src/user/domain/entities/providerData.entity';
 import { SocialMediaLinkEntity } from 'src/user/domain/entities/socialMediaLink.entity';
+import { encrypt, decrypt } from 'src/common/utils/encryption.util';
 
 @Injectable()
 export class UserRepository implements IUserRepository{
@@ -145,8 +146,8 @@ export class UserRepository implements IUserRepository{
             userId,
             {
                 'providerData.mpConnected': data.mpConnected,
-                'providerData.mpAccessToken': data.mpAccessToken,
-                'providerData.mpRefreshToken': data.mpRefreshToken,
+                'providerData.mpAccessToken': data.mpAccessToken ? encrypt(data.mpAccessToken) : undefined,
+                'providerData.mpRefreshToken': data.mpRefreshToken ? encrypt(data.mpRefreshToken) : undefined,
                 'providerData.mpUserId': data.mpUserId,
                 'providerData.mpTokenExpiresAt': data.mpTokenExpiresAt,
             },
@@ -167,8 +168,8 @@ export class UserRepository implements IUserRepository{
                 (social: any) => new SocialMediaLinkEntity(social.platform, social.url)
             ),
             providerData.mpConnected ?? false,
-            providerData.mpAccessToken,
-            providerData.mpRefreshToken,
+            providerData.mpAccessToken ? decrypt(providerData.mpAccessToken) : undefined,
+            providerData.mpRefreshToken ? decrypt(providerData.mpRefreshToken) : undefined,
             providerData.mpUserId,
             providerData.mpTokenExpiresAt,
         );
