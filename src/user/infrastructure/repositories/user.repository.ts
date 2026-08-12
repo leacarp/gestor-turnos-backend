@@ -22,6 +22,7 @@ export class UserRepository implements IUserRepository{
             password: user.getPassword(),
             role: user.getRole(),
             providerData: providerDataForDb,
+            reminderSettings: user.getReminderSettings(),
         });
 
         const saved = await doc.save();

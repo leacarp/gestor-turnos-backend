@@ -27,6 +27,7 @@ import {
 } from '../infrastructure/constants/injection-tokens.js';
 import { CreateTurnoGuestServiceDto } from './dto/create-turno-guest-service.dto.js';
 import { CreateTurnoServiceDto } from './dto/create-turno-service.dto.js';
+import { withReminderDefaults } from '../../user/domain/constants/reminder-defaults.js';
 
 const RECORDATORIO_TOLERANCIA_MS = 20 * 60 * 1000;
 
@@ -273,7 +274,9 @@ export class TurnoService implements ITurnoService {
         clienteEmail: cliente.email,
         servicioNombre: servicio?.nombre ?? 'Servicio',
         proveedorNombre: proveedor?.nombre ?? 'Proveedor',
-        proveedorReminderSettings: proveedor?.reminderSettings,
+        // Siempre resuelto: si el proveedor no configuró nada, caen los defaults
+        // (Telegram activo + chatId de TELEGRAM_DEFAULT_CHAT_ID).
+        proveedorReminderSettings: withReminderDefaults(proveedor?.reminderSettings),
       });
     }
 
