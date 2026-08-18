@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Delete,
   Body,
   Query,
   Req,
@@ -130,5 +131,16 @@ export class MercadoPagoController {
       this.logger.error(`Error en OAuth callback: ${err}`);
       res.redirect(`${frontendUrl}/configuracion/mp-error`);
     }
+  }
+
+  /**
+   * Desvincula la cuenta de Mercado Pago del proveedor.
+   * El proveedor debe estar autenticado.
+   */
+  @Delete('oauth/disconnect')
+  @UseGuards(JwtAuthGuard)
+  async disconnectOAuth(@CurrentUser() user: { id: string; role: string }) {
+    await this.mercadoPagoService.disconnectOAuth(user.id);
+    return { message: 'Cuenta de Mercado Pago desvinculada correctamente' };
   }
 }
