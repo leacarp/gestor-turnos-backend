@@ -160,6 +160,26 @@ export class UserRepository implements IUserRepository{
         }
     }
 
+    async disconnectMpCredentials(userId: string): Promise<void> {
+        const result = await this.userModel.findByIdAndUpdate(
+            userId,
+            {
+                $set: { 'providerData.mpConnected': false },
+                $unset: {
+                    'providerData.mpAccessToken': 1,
+                    'providerData.mpRefreshToken': 1,
+                    'providerData.mpUserId': 1,
+                    'providerData.mpTokenExpiresAt': 1,
+                }
+            },
+            { new: true },
+        );
+
+        if (!result) {
+            throw new NotFoundException('Usuario no encontrado');
+        }
+    }
+
     private mapProviderDataToEntity(providerData: any): ProviderDataEntity {
         return new ProviderDataEntity(
             providerData.address,

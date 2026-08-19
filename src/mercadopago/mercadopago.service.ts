@@ -340,6 +340,11 @@ export class MercadoPagoService {
     this.logger.log(`[OAuth] ✅ Proveedor ${proveedorId} conectó su cuenta de Mercado Pago exitosamente`);
   }
 
+  async disconnectOAuth(proveedorId: string): Promise<void> {
+    await this.userService.disconnectMpCredentials(proveedorId);
+    this.logger.log(`[OAuth] ❌ Proveedor ${proveedorId} desvinculó su cuenta de Mercado Pago`);
+  }
+
   private getFrontendBackUrls(): { success: string; failure: string; pending: string } {
     const frontendUrl = this.configService.get<string>('frontend.url') ?? process.env.FRONTEND_URL ?? 'http://localhost:5173';
     return {

@@ -12,4 +12,5 @@ export interface IUserService{
     findAllUser() : Promise<UserEntity[]>;
     existsProvider(providerId: string) : Promise<boolean>;
     updateMpCredentials(userId: string, data: MpCredentialsData): Promise<void>;
+    disconnectMpCredentials(userId: string): Promise<void>;
 }
