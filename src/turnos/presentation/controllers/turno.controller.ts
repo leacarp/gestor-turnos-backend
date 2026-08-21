@@ -10,6 +10,7 @@ import {
   Inject,
   UseGuards,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 import type { ITurnoService } from '../../domain/interfaces/turno-service.interface.js';
 import { TURNO_SERVICE } from '../../infrastructure/constants/injection-tokens.js';
@@ -29,6 +30,8 @@ import { Public } from '../../../auth/presentation/decorators/public.decorator.j
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator.js';
 import { N8nSecretGuard } from '../../../common/guards/n8n-secret.guard.js';
 
+@ApiTags('turnos')
+@ApiBearerAuth()
 @Controller('turnos')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class TurnoController {
@@ -38,6 +41,7 @@ export class TurnoController {
     private readonly turnoService: ITurnoService,
   ) {}
 
+  @ApiOperation({ summary: 'Crea un turno para un cliente autenticado' })
   @Post()
   @Roles('client', 'provider', 'admin')
   async create(
@@ -50,6 +54,7 @@ export class TurnoController {
     return TurnoResponseDto.fromEntity(entity);
   }
 
+  @ApiOperation({ summary: 'Crea un turno como invitado, sin necesidad de registrarse (público)' })
   @Post('guest')
   @Public()
   async createGuest(
@@ -60,6 +65,7 @@ export class TurnoController {
     return TurnoResponseDto.fromEntity(entity);
   }
 
+  @ApiOperation({ summary: 'Lista todos los turnos (solo admin)' })
   @Get()
   @Roles('admin')
   async findAll(): Promise<TurnoResponseDto[]> {
@@ -67,6 +73,7 @@ export class TurnoController {
     return entities.map(TurnoResponseDto.fromEntity);
   }
 
+  @ApiOperation({ summary: 'Lista los turnos de un proveedor' })
   @Get('proveedor/:proveedorId')
   @Roles('provider', 'admin')
   async findByProveedor(
@@ -76,6 +83,7 @@ export class TurnoController {
     return entities.map(TurnoResponseDto.fromEntity);
   }
 
+  @ApiOperation({ summary: 'Lista los turnos de un cliente' })
   @Get('cliente/:clienteId')
   @Roles('client', 'admin')
   async findByCliente(
@@ -85,6 +93,7 @@ export class TurnoController {
     return entities.map(TurnoResponseDto.fromEntity);
   }
 
+  @ApiOperation({ summary: 'Obtiene la agenda de turnos de un proveedor para un día puntual' })
   @Get('proveedor/:proveedorId/agenda')
   @Roles('provider', 'admin')
   async getAgendaDia(
@@ -96,6 +105,7 @@ export class TurnoController {
     return this.turnoService.getAgendaDia(proveedorId, fechaLocal, user.id, user.role);
   }
 
+  @ApiOperation({ summary: 'Lista turnos que requieren recordatorio (uso interno de n8n, requiere secreto compartido)' })
   @Get('recordatorios')
   @Public()
   @UseGuards(N8nSecretGuard)
@@ -105,6 +115,7 @@ export class TurnoController {
     return this.turnoService.getRecordatorios(ventana);
   }
 
+  @ApiOperation({ summary: 'Cancela todos los turnos de un proveedor para un día (masivo)' })
   @Patch('proveedor/:proveedorId/cancelar-dia')
   @Roles('provider', 'admin')
   async cancelarDia(
@@ -120,6 +131,7 @@ export class TurnoController {
     );
   }
 
+  @ApiOperation({ summary: 'Obtiene un turno por id' })
   @Get(':id')
   @Roles('client', 'provider', 'admin')
   async findById(
@@ -129,6 +141,7 @@ export class TurnoController {
     return TurnoResponseDto.fromEntity(entity);
   }
 
+  @ApiOperation({ summary: 'Actualiza un turno (fecha, hora, estado, etc.)' })
   @Patch(':id')
   @Roles('provider', 'admin')
   async update(
@@ -146,6 +159,7 @@ export class TurnoController {
     return TurnoResponseDto.fromEntity(entity);
   }
 
+  @ApiOperation({ summary: 'Marca un recordatorio como enviado (uso interno de n8n, requiere secreto compartido)' })
   @Patch(':id/recordatorio-enviado')
   @Public()
   @UseGuards(N8nSecretGuard)
@@ -156,6 +170,7 @@ export class TurnoController {
     return this.turnoService.marcarRecordatorioEnviado(id, dto.tipo);
   }
 
+  @ApiOperation({ summary: 'Elimina un turno' })
   @Delete(':id')
   @Roles('provider', 'admin')
   async delete(

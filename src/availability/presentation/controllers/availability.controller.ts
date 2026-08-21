@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Delete, Body, Param, Query, Inject, Put, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import type { IAvailabilityService } from '../../services/interfaces/IAvailabilityService';
 import { WeeklyScheduleEntity } from '../../domain/entities/weeklySchedule.entity';
 import { AvailabilityExceptionEntity } from '../../domain/entities/availabilityException.entity';
@@ -21,6 +22,8 @@ import { AVAILABILITY_SERVICE } from 'src/availability/infrastructure/constants/
 import { Public } from '../../../auth/presentation/decorators/public.decorator.js';
 
 
+@ApiTags('availability')
+@ApiBearerAuth()
 @Controller('availability')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class AvailabilityController {
@@ -29,7 +32,8 @@ export class AvailabilityController {
   ) {}
 
   // --- Weekly Schedule ---
-  
+
+  @ApiOperation({ summary: 'Crea el horario semanal del proveedor' })
   @Post('schedule')
   @Roles('provider')
   async createSchedule(@CurrentUser() user : AuthUserDto, @Body() dto: WeeklyScheduleRequestDto): Promise<WeeklyScheduleResponseDto> {
@@ -38,6 +42,7 @@ export class AvailabilityController {
     return this.toWeeklyScheduleResponse(entity);
   }
 
+  @ApiOperation({ summary: 'Obtiene el horario semanal del proveedor autenticado' })
   @Get('schedule')
   @Roles('provider')
   async getSchedule(@CurrentUser() user : AuthUserDto): Promise<WeeklyScheduleResponseDto> {
@@ -45,6 +50,7 @@ export class AvailabilityController {
     return this.toWeeklyScheduleResponse(entity);
   }
 
+  @ApiOperation({ summary: 'Actualiza el horario semanal del proveedor' })
   @Put('schedule')
   @Roles('provider')
   async updateSchedule(@CurrentUser() user : AuthUserDto, @Body() dto: WeeklyScheduleRequestDto): Promise<WeeklyScheduleResponseDto> {
@@ -55,6 +61,7 @@ export class AvailabilityController {
     
     // --- Exceptions ---
     
+  @ApiOperation({ summary: 'Crea una excepción de disponibilidad (día libre u horario especial)' })
   @Post('exceptions')
   @Roles('provider')
   async createException(@CurrentUser() user : AuthUserDto, @Body() dto: AvailabilityExceptionRequestDto): Promise<AvailabilityExceptionResponseDto> {
@@ -69,6 +76,7 @@ export class AvailabilityController {
     return this.toExceptionResponse(entity);
   }
     
+  @ApiOperation({ summary: 'Lista las excepciones de disponibilidad de un mes' })
   @Get('exceptions')
   @Roles('provider')
   async getExceptionsByMonth(@CurrentUser() user : AuthUserDto, @Query('year') year: string, @Query('month') month: string): Promise<AvailabilityExceptionResponseDto[]> {
@@ -80,6 +88,7 @@ export class AvailabilityController {
     return entities.map(entity => this.toExceptionResponse(entity));
   }
   
+  @ApiOperation({ summary: 'Busca la excepción de disponibilidad de una fecha puntual' })
   @Get('exceptions/date')
   @Roles('provider')
   async findExceptionByDate(@CurrentUser() user : AuthUserDto, @Query() query: GetExceptionByDateRequestDto): Promise<AvailabilityExceptionResponseDto | null> {
@@ -92,6 +101,7 @@ export class AvailabilityController {
 
 
 
+  @ApiOperation({ summary: 'Elimina una excepción de disponibilidad' })
   @Delete('exceptions/:exceptionId')
   @Roles('provider')
   async deleteException(@Param('exceptionId') exceptionId: string): Promise<{ message: string }> {
@@ -100,7 +110,8 @@ export class AvailabilityController {
   }
     
     // --- Available Slots ---
-  @Public()  
+  @ApiOperation({ summary: 'Obtiene los horarios disponibles de un proveedor para una fecha (endpoint público)' })
+  @Public()
   @Get('slots/:providerId')
   @Roles('client', 'provider', 'admin')
   async getAvailableSlots(@Param('providerId') providerId: string, @Query() query: GetSlotsRequestDto): Promise<AvailableSlotResponseDto[]> {

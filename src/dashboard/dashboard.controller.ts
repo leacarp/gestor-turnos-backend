@@ -1,4 +1,5 @@
 import { Controller, Get, UseGuards, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { JwtAuthGuard } from '../auth/infrastructure/guards/jwt-auth.guard.js';
@@ -11,6 +12,8 @@ const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'O
 
 
 
+@ApiTags('dashboard')
+@ApiBearerAuth()
 @Controller('dashboard')
 @UseGuards(JwtAuthGuard)
 export class DashboardController {
@@ -20,6 +23,7 @@ export class DashboardController {
     @InjectModel(User.name) private readonly userModel: Model<User>,
   ) {}
 
+  @ApiOperation({ summary: 'Métricas del proveedor: turnos por mes, tasa de asistencia, ingresos, servicios más pedidos' })
   @Get('metrics')
   async getMetrics(@CurrentUser() user: { id: string }) {
     const proveedorId  = new Types.ObjectId(user.id);
@@ -127,6 +131,7 @@ export class DashboardController {
     };
   }
 
+  @ApiOperation({ summary: 'Lista de clientes (registrados e invitados) que tuvieron turnos con el proveedor' })
   @Get('clientes')
   async getClientes(@CurrentUser() user: { id: string }) {
     const proveedorId = new Types.ObjectId(user.id);

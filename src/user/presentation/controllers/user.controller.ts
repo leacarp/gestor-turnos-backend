@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Put, Param, Delete, Inject, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import type { IUserService } from 'src/user/services/interfaces/IUserService';
 import { USER_SERVICE } from 'src/user/infrastructure/constants/user-service.constants';
 import { JwtAuthGuard } from 'src/auth/infrastructure/guards/jwt-auth.guard';
@@ -17,14 +18,17 @@ import { UserEntity } from 'src/user/domain/entities/user.entity';
 
 
 
+@ApiTags('users')
+@ApiBearerAuth()
 @Controller('users')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class UserController {
   constructor(
     @Inject(USER_SERVICE)
-    private readonly userService: IUserService) 
+    private readonly userService: IUserService)
     {}
 
+  @ApiOperation({ summary: 'Crea un usuario (cliente o proveedor)' })
   @Post()
   @Roles('admin', 'client', 'provider')
   async createUser(@Body() dto: CreateUserDtoRequest) : Promise<UserResponseDto> {
@@ -33,6 +37,7 @@ export class UserController {
     return this.toResponseDto(entity);
   }
 
+  @ApiOperation({ summary: 'Lista todos los usuarios (solo admin)' })
   @Get()
   @Roles('admin')
   async findAllUsers() : Promise<UserResponseDto[]> {
@@ -40,6 +45,7 @@ export class UserController {
     return users.map(user => this.toResponseDto(user));
   }
 
+  @ApiOperation({ summary: 'Devuelve el perfil del usuario autenticado' })
   @Get('me')
   @Roles('client', 'provider', 'admin')
   async findMe(@CurrentUser() user: AuthUserDto): Promise<UserResponseDto> {
@@ -47,6 +53,7 @@ export class UserController {
     return this.toResponseDto(entity);
   }
 
+  @ApiOperation({ summary: 'Devuelve el perfil público de un proveedor (endpoint público)' })
   @Public()
   @Get('profile/:id')
   async getPublicProviderProfile(@Param('id') id: string): Promise<PublicProviderProfileDto> {
@@ -65,6 +72,7 @@ export class UserController {
     return new PublicProviderProfileDto(entity.getId()!, entity.getName(), providerData);
   }
 
+  @ApiOperation({ summary: 'Obtiene un usuario por id (solo admin)' })
   @Get(':id')
   @Roles('admin')
   async findOneUser(@Param('id') id: string) : Promise<UserResponseDto> {
@@ -72,6 +80,7 @@ export class UserController {
     return this.toResponseDto(entity);
   }
 
+  @ApiOperation({ summary: 'Actualiza el perfil del usuario autenticado' })
   @Put('me')
   @Roles('client', 'provider')
   async updateMe(@CurrentUser() user: AuthUserDto, @Body() dto: UpdateUserDtoRequest): Promise<UserResponseDto> {
@@ -80,6 +89,7 @@ export class UserController {
     return this.toResponseDto(entity);
   }
 
+  @ApiOperation({ summary: 'Actualiza un usuario por id (solo admin)' })
   @Put(':id')
   @Roles('admin')
   async updateUser(@Param('id') id: string, @Body() dto: UpdateUserDtoRequest): Promise<UserResponseDto> {
@@ -88,6 +98,7 @@ export class UserController {
     return this.toResponseDto(entity);
   }
   
+  @ApiOperation({ summary: 'Elimina la cuenta del usuario autenticado' })
   @Delete('me')
   @Roles('client', 'provider')
   async deleteMe(@CurrentUser() user: AuthUserDto): Promise<{ message: string }> {
@@ -95,6 +106,7 @@ export class UserController {
     return { message: 'Usuario eliminado correctamente' };
   }
 
+  @ApiOperation({ summary: 'Elimina un usuario por id (solo admin)' })
   @Delete(':id')
   @Roles('admin')
   async deleteUser(@Param('id') id: string) {

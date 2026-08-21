@@ -9,6 +9,7 @@ import {
   Inject,
   UseGuards
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 
 import type { IServicioService } from '../../domain/interfaces/servicio-service.interface.js';
 import { SERVICIO_SERVICE } from '../../infrastructure/constants/injection-tokens.js';
@@ -24,6 +25,8 @@ import { Roles } from '../../../auth/presentation/decorators/roles.decorator.js'
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator.js';
 import { Public } from '../../../auth/presentation/decorators/public.decorator.js';
 
+@ApiTags('servicios')
+@ApiBearerAuth()
 @Controller('servicios')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('provider', 'admin')
@@ -34,6 +37,7 @@ export class ServicioController {
     private readonly servicioService: IServicioService,
   ) { }
 
+  @ApiOperation({ summary: 'Crea un servicio ofrecido por el proveedor' })
   @Post()
   async create(
     @Body() dto: CreateServicioRequestDto,
@@ -53,12 +57,14 @@ export class ServicioController {
     return ServicioResponseDto.fromEntity(entity);
   }
 
+  @ApiOperation({ summary: 'Lista todos los servicios' })
   @Get()
   async findAll(): Promise<ServicioResponseDto[]> {
     const entities = await this.servicioService.findAll();
     return entities.map(ServicioResponseDto.fromEntity);
   }
 
+  @ApiOperation({ summary: 'Lista los servicios de un proveedor (endpoint público)' })
   @Public()
   @Get('proveedor/:proveedorId')
   async findByProveedor(
@@ -68,12 +74,14 @@ export class ServicioController {
     return entities.map(ServicioResponseDto.fromEntity);
   }
 
+  @ApiOperation({ summary: 'Obtiene un servicio por id' })
   @Get(':id')
   async findById(@Param('id', ParseMongoIdPipe) id: string): Promise<ServicioResponseDto> {
     const entity = await this.servicioService.findById(id);
     return ServicioResponseDto.fromEntity(entity);
   }
 
+  @ApiOperation({ summary: 'Actualiza un servicio' })
   @Patch(':id')
   async update(
     @Param('id', ParseMongoIdPipe) id: string,
@@ -89,6 +97,7 @@ export class ServicioController {
     return ServicioResponseDto.fromEntity(entity);
   }
 
+  @ApiOperation({ summary: 'Elimina un servicio' })
   @Delete(':id')
   async delete(
     @Param('id', ParseMongoIdPipe) id: string,

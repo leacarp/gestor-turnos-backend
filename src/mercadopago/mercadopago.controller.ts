@@ -12,6 +12,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { MercadoPagoService } from './mercadopago.service.js';
 import { CreatePreferenceRequestDto } from './dtos/create-preference-request.dto.js';
@@ -20,6 +21,7 @@ import { CurrentUser } from '../auth/presentation/decorators/current-user.decora
 import { WebhookSignatureGuard } from './guards/webhook-signature.guard.js';
 import { CreateGuestPreferenceRequestDto } from './dtos/create-guest-preference-request.dto.js';
 
+@ApiTags('mercadopago')
 @Controller('mercadopago')
 export class MercadoPagoController {
   private readonly logger = new Logger(MercadoPagoController.name);
@@ -33,6 +35,7 @@ export class MercadoPagoController {
    * Crea una preferencia de pago de seña para un turno como invitado.
    * NO requiere autenticación. Devuelve la URL de pago de Mercado Pago.
    */
+  @ApiOperation({ summary: 'Crea una preferencia de pago de seña para un turno como invitado (público)' })
   @Post('guest-preference')
   async createGuestPreference(@Body() dto: CreateGuestPreferenceRequestDto) {
     const result = await this.mercadoPagoService.createGuestPreference(
@@ -56,6 +59,8 @@ export class MercadoPagoController {
    * Crea una preferencia de pago de seña para un turno.
    * El cliente debe estar autenticado. Devuelve la URL de pago de Mercado Pago.
    */
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Crea una preferencia de pago de seña para un turno de un cliente autenticado' })
   @Post('preference')
   @UseGuards(JwtAuthGuard)
   async createPreference(
@@ -84,6 +89,7 @@ export class MercadoPagoController {
    * Cuando el pago es aprobado, crea el Pago y el Turno.
    * Este endpoint NO requiere autenticación (lo llama MP directamente).
    */
+  @ApiOperation({ summary: 'Webhook de notificaciones de pago de Mercado Pago (uso interno de MP)' })
   @Post('webhook')
   @HttpCode(HttpStatus.OK)
   async webhook(@Req() req: Request, @Res() res: Response) {
@@ -104,6 +110,8 @@ export class MercadoPagoController {
    * Inicia el flujo OAuth para conectar la cuenta de Mercado Pago del proveedor.
    * El proveedor debe estar autenticado.
    */
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Inicia el flujo OAuth para conectar la cuenta de Mercado Pago del proveedor' })
   @Get('oauth/connect')
   @UseGuards(JwtAuthGuard)
   connectOAuth(@CurrentUser() user: { id: string; role: string }) {
@@ -115,6 +123,7 @@ export class MercadoPagoController {
    * Callback OAuth de Mercado Pago.
    * MP redirige aquí con el código de autorización tras que el proveedor autoriza.
    */
+  @ApiOperation({ summary: 'Callback OAuth de Mercado Pago (redirige el navegador del proveedor)' })
   @Get('oauth/callback')
   async oauthCallback(
     @Query('code') code: string,
