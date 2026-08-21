@@ -18,4 +18,5 @@ export interface IUserRepository{
     deleteUser(id: string, role : string) : Promise<void>;
     findAllUsers(): Promise<UserEntity[]>;
     updateMpCredentials(userId: string, data: MpCredentialsData): Promise<void>;
+    disconnectMpCredentials(userId: string): Promise<void>;
 }

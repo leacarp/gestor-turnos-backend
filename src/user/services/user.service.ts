@@ -132,6 +132,10 @@ export class UserService implements IUserService {
     return this.userRepository.updateMpCredentials(userId, data);
   }
 
+  async disconnectMpCredentials(userId: string): Promise<void> {
+    return this.userRepository.disconnectMpCredentials(userId);
+  }
+
   private mapProviderDataDtoToEntity(dto: ProviderDataDtoService): ProviderDataEntity {
     return new ProviderDataEntity(
       dto.getAddress(),
