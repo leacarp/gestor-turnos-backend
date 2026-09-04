@@ -25,14 +25,22 @@ export class DashboardController {
 
   @ApiOperation({ summary: 'Métricas del proveedor: turnos por mes, tasa de asistencia, ingresos, servicios más pedidos' })
   @Get('metrics')
-  async getMetrics(@CurrentUser() user: { id: string }) {
+  async getMetrics(@CurrentUser() user: { id: string }, @Query('month') month?: string) {
     const proveedorId  = new Types.ObjectId(user.id);
     const ahora        = new Date();
-    const inicioMes    = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
-    const finMes       = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0, 23, 59, 59);
-    const inicioAnio   = new Date(ahora.getFullYear(), 0, 1);
-    const mesAnteriorInicio = new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1);
-    const mesAnteriorFin    = new Date(ahora.getFullYear(), ahora.getMonth(), 0, 23, 59, 59);
+
+    // ?month=YYYY-MM permite pedir las métricas de un mes puntual (lo usa el
+    // click sobre una barra de "Turnos por mes" en el dashboard). Sin el
+    // parámetro, se calcula todo para el mes en curso, como antes.
+    const matchMes = month?.match(/^(\d{4})-(0[1-9]|1[0-2])$/);
+    const anio     = matchMes ? Number(matchMes[1]) : ahora.getFullYear();
+    const mesIndex = matchMes ? Number(matchMes[2]) - 1 : ahora.getMonth();
+
+    const inicioMes    = new Date(anio, mesIndex, 1);
+    const finMes       = new Date(anio, mesIndex + 1, 0, 23, 59, 59);
+    const inicioAnio   = new Date(anio, 0, 1);
+    const mesAnteriorInicio = new Date(anio, mesIndex - 1, 1);
+    const mesAnteriorFin    = new Date(anio, mesIndex, 0, 23, 59, 59);
 
     const [
       turnosPorMesRaw,
@@ -43,16 +51,16 @@ export class DashboardController {
       turnosMesAnterior,
       ultimosTurnosRaw,
     ] = await Promise.all([
-      // Turnos agrupados por mes (año en curso)
+      // Turnos agrupados por mes (año del mes consultado)
       this.turnoModel.aggregate([
         { $match: { proveedorId, fecha: { $gte: inicioAnio } } },
         { $group: { _id: { $month: '$fecha' }, cantidad: { $sum: 1 } } },
         { $sort: { _id: 1 } },
       ]),
 
-      // Top 5 servicios más pedidos (todos los tiempos)
+      // Top 5 servicios más pedidos del mes consultado
       this.turnoModel.aggregate([
-        { $match: { proveedorId } },
+        { $match: { proveedorId, fecha: { $gte: inicioMes, $lte: finMes } } },
         { $group: { _id: '$servicioId', cantidad: { $sum: 1 } } },
         { $sort: { cantidad: -1 } },
         { $limit: 5 },
@@ -61,13 +69,13 @@ export class DashboardController {
         { $project: { _id: 0, nombre: '$srv.nombre', cantidad: 1 } },
       ]),
 
-      // Tasa de asistencia (completado vs cancelado, histórico)
+      // Tasa de asistencia del mes consultado (completado vs cancelado)
       this.turnoModel.aggregate([
-        { $match: { proveedorId, estado: { $in: ['completado', 'cancelado'] } } },
+        { $match: { proveedorId, estado: { $in: ['completado', 'cancelado'] }, fecha: { $gte: inicioMes, $lte: finMes } } },
         { $group: { _id: '$estado', count: { $sum: 1 } } },
       ]),
 
-      // Ingreso estimado: suma de precios de servicios en turnos completados este mes
+      // Ingreso estimado: suma de precios de servicios en turnos completados del mes consultado
       this.turnoModel.aggregate([
         { $match: { proveedorId, estado: 'completado', fecha: { $gte: inicioMes, $lte: finMes } } },
         { $lookup: { from: 'servicios', localField: 'servicioId', foreignField: '_id', as: 'srv' } },
@@ -75,15 +83,15 @@ export class DashboardController {
         { $group: { _id: null, total: { $sum: '$srv.precio' } } },
       ]),
 
-      // Cantidad de turnos este mes
+      // Cantidad de turnos del mes consultado
       this.turnoModel.countDocuments({ proveedorId, fecha: { $gte: inicioMes, $lte: finMes } }),
 
-      // Cantidad de turnos mes anterior (para el badge de comparación)
+      // Cantidad de turnos del mes anterior al consultado (para el badge de comparación)
       this.turnoModel.countDocuments({ proveedorId, fecha: { $gte: mesAnteriorInicio, $lte: mesAnteriorFin } }),
 
-      // Últimos 8 turnos con datos de cliente y servicio
+      // Últimos 8 turnos del mes consultado, con datos de cliente y servicio
       this.turnoModel.aggregate([
-        { $match: { proveedorId } },
+        { $match: { proveedorId, fecha: { $gte: inicioMes, $lte: finMes } } },
         { $sort: { fecha: -1 } },
         { $limit: 8 },
         { $lookup: { from: 'users',     localField: 'clienteId',  foreignField: '_id', as: 'cliente'  } },
@@ -95,7 +103,9 @@ export class DashboardController {
           fecha: 1,
           horaInicio: 1,
           estado: 1,
-          clienteNombre: '$cliente.name',
+          // Turnos de invitado no tienen usuario asociado ($cliente.name),
+          // así que caemos al nombre guardado en el propio turno.
+          clienteNombre: { $ifNull: ['$cliente.name', '$clienteNombre'] },
           servicioNombre: '$servicio.nombre',
           precio: '$servicio.precio',
         }},
@@ -121,6 +131,8 @@ export class DashboardController {
       : null;
 
     return {
+      anio,
+      mes: mesIndex + 1,
       turnosEsteMes,
       variacionMensual,
       tasaAsistencia,
